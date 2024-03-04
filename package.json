@@ -1,0 +1,20 @@
+{
+  "name": "potw-functions",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "deploy": "firebase deploy --only functions"
+  },
+  "author": "quirkles",
+  "license": "ISC",
+  "devDependencies": {
+    "firebase-tools": "^13.4.0"
+  },
+  "dependencies": {
+    "@firebase/firestore": "^4.4.3",
+    "firebase-admin": "^12.0.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
