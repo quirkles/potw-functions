@@ -67,3 +67,7 @@ node_modules/
 
 # editor files
 .idea
+
+# config files
+functions/.env.*
+!functions/.env.*.enc
