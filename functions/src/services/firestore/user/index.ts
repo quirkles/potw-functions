@@ -1,21 +1,97 @@
+import {randomBytes} from "crypto";
 import {getFirestore} from "firebase-admin/firestore";
+import {makeId} from "../../utils/string";
+import * as logger from "firebase-functions/logger";
 /**
  * This function checks if a user with the given email exists in the Firestore database.
  * If the user exists, it returns the user's ID.
  * If the user does not exist, it creates a new user with the given email and returns the new user's ID.
  *
  * @param {string} email - The email of the user.
+ * @param {boolean} needsVerification - Does the user require verification?
+ * Oauth methods do not require verification, email login does.
  * @return {Promise<string>} The ID of the user.
  */
-export async function saveOrGetId(email: string): Promise<string> {
+export async function saveOrGetId(
+  email: string,
+  needsVerification = false
+): Promise<string> {
   const db = getFirestore();
   const users = await db.collection("users").where("email", "==", email).get();
   if (users.size === 0) {
     // Create a new user
     const newUser = db.collection("users").doc();
-    await newUser.set({email});
+    await newUser.set({email, verified: !needsVerification, createdAt: new Date(), updatedAt: new Date()});
     return newUser.id;
   } else {
     return users.docs[0].id;
   }
+}
+/**
+ * Creates a one-time password (OTP) for the given email and invalidates any existing OTPs for the same email.
+ *
+ * @param {string} email - The email for which to create the OTP.
+ * @return {Promise<string>} A Promise that resolves to the otp.
+ * @throws {Error} If there's an error while creating the OTP or invalidating existing OTPs.
+ */
+export async function createOtpForEmail(email: string): Promise<{
+    otp: string;
+    codeVerifier: string;
+}> {
+  const db = getFirestore();
+  const otpDoc = db.collection("otp").doc();
+  const existingOtpForEmailQuery = db.collection("otp").where("email", "==", email);
+  await db.runTransaction(async (t) => {
+    const existingOtp = await existingOtpForEmailQuery.get();
+    await Promise.all(
+      existingOtp.docs.map((doc) => {
+        t.update(doc.ref, {valid: false});
+      })
+    );
+  });
+
+  const otp = makeId();
+  const codeVerifier = randomBytes(64).toString("hex");
+  await otpDoc.set({
+    email,
+    otp,
+    codeVerifier,
+    createdAt: new Date(),
+    used: false,
+    valid: true,
+  });
+  return {
+    otp,
+    codeVerifier,
+  };
+}
+
+/**
+ * Verifies an OTP (One-Time Password) and its associated code verifier.
+ *
+ * @param {string} otp - The OTP to verify.
+ * @param {string} codeVerifier - The code verifier associated with the OTP.
+ * @return {Promise<boolean>} A Promise that resolves to a boolean.
+ * Indicates whether the OTP and code verifier are valid and unused.
+ * @throws {Error} If there's an error while verifying the OTP and code verifier.
+ */
+export async function verifyOtp(otp: string, codeVerifier: string): Promise<string | Error> {
+  const db = getFirestore();
+  logger.info(`otp: ${otp}, codeVerifier: ${codeVerifier}`);
+  const otpQuery = db.collection("otp")
+    .where("otp", "==", otp)
+    .where("codeVerifier", "==", codeVerifier)
+    .where("valid", "==", true)
+    .where("used", "==", false);
+  const otpDocs = await otpQuery.get();
+  logger.info(`otpDocs found: ${otpDocs.size}`);
+  if (otpDocs.size === 1) {
+    const otpDoc = otpDocs.docs[0];
+    await otpDoc.ref.update({used: true, valid: false});
+    return otpDoc.data().email;
+  }
+  if (otpDocs.size > 1) {
+    return new Error("Unexpected number of OTPs found");
+  }
+  return new Error("Invalid OTP");
 }

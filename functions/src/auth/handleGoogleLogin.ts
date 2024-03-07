@@ -7,6 +7,7 @@ import {OAuth2Client} from "google-auth-library";
 
 import {initializeAppAdmin} from "../services/firebase";
 import {saveOrGetId} from "../services/firestore/user";
+import {getConfig} from "../config";
 
 export const handleGoogleLogin = onRequest({cors: true}, async (request, response) => {
   initializeAppAdmin();
@@ -24,7 +25,7 @@ export const handleGoogleLogin = onRequest({cors: true}, async (request, respons
   const token = sign({
     email: tokenInfo.email,
     id,
-  }, "super-secret");
+  }, getConfig().jwtSecret);
   response.json({token});
   return;
 });
