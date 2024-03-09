@@ -32,9 +32,9 @@ export const handleEmailLogin = onRequest({cors: true}, async (req, resp) => {
     from: "al.quirk@gmail.com", // Use the email address or domain you verified above
     subject: "Here is your OTP",
     // eslint-disable-next-line max-len
-    text: `Click here: ${getConfig().webUrl}?otp=${otp}&otpCodeVerifier=${codeVerifier}. Or use the code: ${otp} to login. This code will expire in 5 minutes.`,
+    text: `Click here: ${getConfig().webUrl}/login?otp=${otp}&otpCodeVerifier=${codeVerifier}. Or use the code: ${otp} to login. This code will expire in 5 minutes.`,
     // eslint-disable-next-line max-len
-    html: `<p>Click <a href="${getConfig().webUrl}?otp=${otp}&otpCodeVerifier=${codeVerifier}">here</a> or use the code: ${otp} to login. This code will expire in 5 minues.</p>`,
+    html: `<p>Click <a href="${getConfig().webUrl}/login?otp=${otp}&otpCodeVerifier=${codeVerifier}">here</a> or use the code: ${otp} to login. This code will expire in 5 minues.</p>`,
   };
   sg.setApiKey(apiKey);
   try {

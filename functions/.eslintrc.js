@@ -31,6 +31,8 @@ module.exports = {
     "max-len": ["error", {"code": 120}],
     "@typescript-eslint/no-inferrable-types": 0,
     "no-unused-vars": "off",
+    "new-cap": "off",
+    "require-jsdoc": "off",
     "@typescript-eslint/no-unused-vars": [
       "warn", // or "error"
       {
