@@ -1,7 +1,7 @@
 import {onMessagePublished} from "firebase-functions/v2/pubsub";
 import {z} from "zod";
-import {User} from "../db/entities/User";
-import {getDataSource} from "../db/DBClient";
+import {getDb} from "../db/dbClient";
+import {users} from "../db/schema/user";
 
 const userPayloadSchema = z.object({
   firestoreId: z.string(),
@@ -20,23 +20,7 @@ export const createUser = onMessagePublished("create-user", async (event) => {
     console.error(`Error validating user payload: ${e}`);
     return;
   }
-  const dataSource = getDataSource();
-  console.log("initializing data source.");
-  try {
-    await dataSource.initialize();
-  } catch (e) {
-    console.error(`Error initializing data source: ${e}`);
-    return;
-  }
-  console.log("Done initializing data source");
-  const user = dataSource.getRepository(User).create(validated);
-  console.log(`saving user: ${JSON.stringify(user)}`);
-  try {
-    await dataSource.getRepository(User).save(user);
-  } catch (e) {
-    console.error(`Error saving user: ${e}`);
-    return dataSource.destroy();
-  }
-  console.log(`Saved created: ${JSON.stringify(user)}`);
-  return dataSource.destroy();
+  const db = getDb();
+  db.insert(users).values(validated);
+  console.log(validated);
 });
