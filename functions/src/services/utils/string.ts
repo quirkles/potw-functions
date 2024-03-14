@@ -15,3 +15,11 @@ export function makeId(length: number = 5): string {
   }
   return result;
 }
+
+export function mask(clear: string): string {
+  return clear.split("").reduce((acc, char, index) => {
+    if (index < 1) return acc + char;
+    if (index > clear.length) return acc + char;
+    return acc + "*";
+  }, "");
+}
