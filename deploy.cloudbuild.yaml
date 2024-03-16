@@ -1,0 +1,23 @@
+steps:
+  - id: 'yarn install'
+    name: 'node:20'
+    entrypoint: 'npm'
+    args: [ 'install' ]
+  - id: 'lint'
+    name: 'node:20'
+    entrypoint: 'npm'
+    args: [ 'run', 'lint' ]
+  - id: 'test'
+    name: 'node:20'
+    entrypoint: 'npm'
+    args: [ 'run', 'test' ]
+  - id: 'decrypt secrets'
+    name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args: [ './scripts/decryptEnv.sh', '-e=${_TARGET_ENVIRONMENT}' ]
+  - id: 'firebase use env'
+    name: gcr.io/$PROJECT_ID/firebase
+    args: ['use', '${_TARGET_ENVIRONMENT}']
+  - id: 'firebase deploy'
+    name: gcr.io/$PROJECT_ID/firebase
+    args: ['deploy', '--only=functions', '--force']
