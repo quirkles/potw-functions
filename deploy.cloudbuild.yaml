@@ -22,7 +22,7 @@ steps:
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args: [ './scripts/decrypt_secrets.sh', '-e=${_TARGET_ENVIRONMENT}' ]
-  - id: 'decrypt secrets'
+  - id: 'copy env file'
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'cp'
     args: [ '.env.${_TARGET_ENVIRONMENT}', '.env' ]
