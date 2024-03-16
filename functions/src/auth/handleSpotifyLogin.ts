@@ -4,7 +4,9 @@ import * as logger from "firebase-functions/logger";
 import {sign} from "jsonwebtoken";
 
 import {initializeAppAdmin} from "../services/firebase";
-import {saveOrGetId} from "../services/firestore/user";
+import {saveOrGetId, setField} from "../services/firestore/user";
+import {getDb} from "../db/dbClient";
+import {users} from "../db/schema/user";
 
 export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
   initializeAppAdmin();
@@ -20,11 +22,26 @@ export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
 
   logger.info("from spotify", data);
 
-  const id = await saveOrGetId(data.email);
+  const firestoreId = await saveOrGetId(data.email);
+  const db = getDb();
+
+  const saved = await db.insert(users).values({
+    email: data.email,
+    firestoreId,
+  }).returning({insertedId: users.id}).onConflictDoNothing();
+
+  const sqlId = saved[0].insertedId;
+
+  await setField(firestoreId, "sqlId", sqlId);
+
+  await setField(firestoreId, "sqlId", sqlId);
+
   const token = sign({
     email: data.email,
-    id,
+    firestoreId,
+    sqlId,
   }, "super-secret");
+
   resp.json({token});
   return;
 });

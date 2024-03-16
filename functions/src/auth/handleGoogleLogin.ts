@@ -6,14 +6,13 @@ import {sign} from "jsonwebtoken";
 import {OAuth2Client} from "google-auth-library";
 
 import {initializeAppAdmin} from "../services/firebase";
-import {saveOrGetId} from "../services/firestore/user";
+import {saveOrGetId, setField} from "../services/firestore/user";
 import {getConfig} from "../config";
+import {getDb} from "../db/dbClient";
+import {users} from "../db/schema/user";
 
 export const handleGoogleLogin = onRequest({cors: true}, async (request, response) => {
   initializeAppAdmin();
-  logger.info("Hello logs!", {structuredData: true});
-  logger.info(`body: ${JSON.stringify(request.body)}`);
-  logger.info(`query: ${JSON.stringify(request.query)}`);
   const client = new OAuth2Client();
   const tokenInfo = await client.getTokenInfo(request.body.token);
   logger.info(tokenInfo);
@@ -21,11 +20,28 @@ export const handleGoogleLogin = onRequest({cors: true}, async (request, respons
     response.status(401).send("Invalid token");
     return;
   }
-  const id = await saveOrGetId(tokenInfo.email);
-  const token = sign({
+  const firestoreId = await saveOrGetId(tokenInfo.email);
+
+  const db = getDb();
+
+  const saved = await db.insert(users).values({
     email: tokenInfo.email,
-    id,
-  }, getConfig().jwtSecret);
+    firestoreId,
+  }).returning({insertedId: users.id}).onConflictDoNothing();
+
+  const sqlId = saved[0].insertedId;
+
+  await setField(firestoreId, "sqlId", sqlId);
+
+  const payload = {
+    email: tokenInfo.email,
+    firestoreId,
+    sqlId,
+  };
+
+  logger.info("payload");
+  logger.info(payload);
+  const token = sign(payload, getConfig().jwtSecret);
   response.json({token});
   return;
 });
