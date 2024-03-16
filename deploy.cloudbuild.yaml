@@ -22,6 +22,10 @@ steps:
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args: [ './scripts/decrypt_secrets.sh', '-e=${_TARGET_ENVIRONMENT}' ]
+  - id: 'decrypt secrets'
+    name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'cp'
+    args: [ '.env.${_TARGET_ENVIRONMENT}', '.env' ]
   - id: 'firebase deploy'
     name: gcr.io/$PROJECT_ID/firebase
     args: ['deploy', '--only=functions', '--force']
