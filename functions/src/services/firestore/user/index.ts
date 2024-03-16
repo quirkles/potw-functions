@@ -96,7 +96,7 @@ export async function verifyOtp(otp: string, codeVerifier: string): Promise<stri
   return new Error("Invalid OTP");
 }
 
-export async function setField(id: string, field: string, value: any): Promise<void> {
+export async function setField(id: string, field: string, value: string): Promise<void> {
   const db = getFirestore();
   const user = db.collection("users").doc(id);
   await user.update({[field]: value});
