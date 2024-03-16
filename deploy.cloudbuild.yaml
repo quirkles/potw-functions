@@ -25,7 +25,7 @@ steps:
   - id: 'copy env file'
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'cp'
-    args: [ '.env.${_TARGET_ENVIRONMENT}', '.env' ]
+    args: [ './functions/.env.${_TARGET_ENVIRONMENT}', './functions/.env' ]
   - id: 'firebase deploy'
     name: gcr.io/$PROJECT_ID/firebase
     args: ['deploy', '--only=functions', '--force']
