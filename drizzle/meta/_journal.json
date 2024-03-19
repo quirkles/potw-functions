@@ -22,6 +22,20 @@
       "when": 1710597554491,
       "tag": "0002_smooth_whizzer",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1710811325245,
+      "tag": "0003_strange_ronan",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1710812445873,
+      "tag": "0004_purple_lethal_legion",
+      "breakpoints": true
     }
   ]
 }

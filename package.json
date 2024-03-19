@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "deploy": "firebase deploy --only functions"
+    "deploy": "firebase deploy --only functions",
+    "migrations:generate": "drizzle-kit generate:pg",
+    "migrations:run:local": "ts-node drizze.migrate.ts"
   },
   "author": "quirkles",
   "license": "ISC",
