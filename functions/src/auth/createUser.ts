@@ -20,6 +20,7 @@ export const createUser = onMessagePublished("create-user", async (event) => {
     console.error(`Error validating user payload: ${e}`);
     return;
   }
+  validated.username = validated.username || validated.email;
   const db = getDb();
   await db.insert(users).values(validated);
   console.log("inserted", validated);
