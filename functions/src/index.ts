@@ -6,6 +6,8 @@ import {createUser} from "./auth/createUser";
 
 import {createGame} from "./games/createGame";
 
+import {fetchUserById} from "./users/fetchUserById";
+
 export {
   handleGoogleLogin,
   handleSpotifyLogin,
@@ -13,4 +15,5 @@ export {
   verifyOtp,
   createUser,
   createGame,
+  fetchUserById,
 };
