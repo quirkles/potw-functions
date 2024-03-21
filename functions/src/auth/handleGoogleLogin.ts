@@ -27,7 +27,12 @@ export const handleGoogleLogin = onRequest({cors: true}, async (request, respons
   const saved = await db.insert(users).values({
     email: tokenInfo.email,
     firestoreId,
-  }).returning({insertedId: users.id}).onConflictDoNothing();
+  }).returning({insertedId: users.id}).onConflictDoUpdate({
+    target: users.email,
+    set: {
+      email: tokenInfo.email,
+    },
+  });
 
   const sqlId = saved[0].insertedId;
 

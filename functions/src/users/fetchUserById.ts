@@ -20,7 +20,6 @@ export const fetchUserById = onRequest(
       .from(users)
       .where(eq(users.id, String(id)))
       .limit(1);
-    console.log("\n####\n", "results", result, "\n####\n");
     if (!result) {
       res.status(404).send("user not found");
       return;

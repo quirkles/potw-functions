@@ -23,7 +23,12 @@ export const verifyOtpFn = onRequest({cors: true}, async (req, resp) => {
   const saved = await db.insert(users).values({
     email: result,
     firestoreId,
-  }).returning({insertedId: users.id}).onConflictDoNothing();
+  }).returning({insertedId: users.id}).onConflictDoUpdate({
+    target: users.email,
+    set: {
+      email: result,
+    },
+  });
 
   const sqlId = saved[0].insertedId;
 
