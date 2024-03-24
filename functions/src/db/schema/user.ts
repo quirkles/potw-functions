@@ -1,5 +1,7 @@
 import {pgTable, uuid, varchar} from "drizzle-orm/pg-core";
-import {sql} from "drizzle-orm";
+import {relations, sql} from "drizzle-orm";
+import {games} from "./game";
+import {gamesToUsers} from "./games_to_users";
 
 
 export const users = pgTable("users", {
@@ -8,3 +10,8 @@ export const users = pgTable("users", {
   email: varchar("email").unique(),
   firestoreId: varchar("firestore_id").unique(),
 });
+
+export const usersRelations = relations(users, ({many}) => ({
+  gamesAsAdmin: many(games),
+  gamesAsParticipant: many(gamesToUsers),
+}));

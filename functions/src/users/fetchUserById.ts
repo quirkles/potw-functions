@@ -5,25 +5,28 @@ import {users} from "../db/schema/user";
 
 export const fetchUserById = onRequest(
   async (req, res) => {
-    const {id} = req.query;
+    const {
+      id
+      , includeGames = "",
+    } = req.query;
     if (!id) {
       res.status(400).send("id is required");
       return;
     }
+    const shouldIncludeGames = includeGames === "true";
     const db = getDb();
-    const [result] = await db.select({
-      sqlId: users.id,
-      firestoreId: users.firestoreId,
-      username: users.username,
-      email: users.email,
-    })
-      .from(users)
-      .where(eq(users.id, String(id)))
-      .limit(1);
+    const result = await db.query.users.findFirst({
+      where: eq(users.id, String(id)),
+      with: {
+        gamesAsParticipant: shouldIncludeGames as any,
+        gamesAsAdmin: shouldIncludeGames as any,
+      },
+    });
     if (!result) {
       res.status(404).send("user not found");
       return;
     }
+    (result as Record<string, unknown>)["sqlId"] = result.id;
     res.status(200).json(result);
     return;
   });
