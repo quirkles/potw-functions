@@ -1,11 +1,13 @@
 import {AsyncLocalStorage} from "async_hooks";
 
+import {IncomingHttpHeaders} from "http";
 import {type Request, type Response} from "express";
 import {TypeOf, z, ZodError, ZodSchema} from "zod";
 import {v4} from "uuid";
 
+import {type ObjectFromList, type OrPromise} from "../typeUtils";
+
 import {createLogger, Logger} from "./logger";
-import {OrPromise} from "../typeUtils";
 
 const functionInstanceId = v4();
 
@@ -16,27 +18,37 @@ const asyncLocalStorage = new AsyncLocalStorage<{
 type HandlerFunctionConfig<
   BodySchema extends ZodSchema,
   ResponseSchema extends ZodSchema,
+  Headers extends Readonly<[string, ...(string)[]]>,
 > = {
     bodySchema?: BodySchema,
     responseSchema?: ResponseSchema,
+    useHeaders?: Headers
 };
 
 type HandlerFunction<
   BodySchema extends ZodSchema,
   ResponseSchema extends ZodSchema,
+  Headers extends Readonly<[string, ...(string)[]]>,
 > = (
-    body: BodySchema extends undefined ? unknown : TypeOf<BodySchema>
+    payload: {
+      body: BodySchema extends undefined ? unknown : TypeOf<BodySchema>
+      headers: Headers extends undefined ?
+          IncomingHttpHeaders :
+          ObjectFromList<Headers>
+    }
 ) => ResponseSchema extends undefined ? unknown : OrPromise<TypeOf<ResponseSchema>>;
 export function httpHandler<
     BodySchema extends ZodSchema,
-    ResponseSchema extends ZodSchema
+    ResponseSchema extends ZodSchema,
+    Headers extends Readonly<[string, ...(string)[]]>,
 >(
-  func: HandlerFunction<BodySchema, ResponseSchema>,
-  config: HandlerFunctionConfig<BodySchema, ResponseSchema> = {}
+  func: HandlerFunction<BodySchema, ResponseSchema, Headers>,
+  config?: HandlerFunctionConfig<BodySchema, ResponseSchema, Headers>
 ): (req: Request, res: Response) => void | Promise<void> {
   const {
     bodySchema = z.any(),
     responseSchema = z.any(),
+    useHeaders,
   } = config || {};
   return async (req, res) => {
     const logLabels: Record<string, string> = {
@@ -47,6 +59,59 @@ export function httpHandler<
       body = {},
       headers = {},
     } = req;
+
+    const logger = createLogger(logLabels);
+
+    let validatedHeaders: ObjectFromList<Headers>;
+    if (useHeaders) {
+      const headersSchema = z.record(
+        z.enum(useHeaders),
+        z.string().or(z.array(z.string()).or(z.undefined()))
+      );
+      try {
+        validatedHeaders = headersSchema.parse(headers);
+        logger.debug("Validated request headers", {
+          headers: validatedHeaders,
+        });
+      } catch (e) {
+        let errorMessage: string | Record<string, unknown> = (e as Error).message;
+        if (e instanceof ZodError) {
+          errorMessage = e.format();
+        }
+        logger.warn("Invalid request headers", {
+          error: errorMessage,
+          headers,
+        });
+        res.status(400).json({
+          error: errorMessage,
+          message: "Invalid request headers",
+        });
+        return;
+      }
+    }
+    let validatedBody: TypeOf<BodySchema>;
+    if (bodySchema) {
+      try {
+        const validatedBody = bodySchema.parse(body);
+        logger.debug("Validated request body", {
+          body: validatedBody,
+        });
+      } catch (e) {
+        let errorMessage: string | Record<string, unknown> = (e as Error).message;
+        if (e instanceof ZodError) {
+          errorMessage = e.format();
+        }
+        logger.warn("Invalid request body", {
+          error: errorMessage,
+          body,
+        });
+        res.status(400).json({
+          error: errorMessage,
+          message: "Invalid request body",
+        });
+        return;
+      }
+    }
     const correlationId = headers["x-correlation-id"];
     if (correlationId) {
       logLabels["correlationId"] = String(correlationId);
@@ -57,32 +122,20 @@ export function httpHandler<
       }
     }
 
-    const logger = createLogger(logLabels);
-
-    let validatedBody: TypeOf<BodySchema>;
-    try {
-      validatedBody = bodySchema.parse(body);
-      logger.debug("Validated request body", validatedBody);
-    } catch (e) {
-      let errorMessage: string | Record<string, unknown> = (e as Error).message;
-      if (e instanceof ZodError) {
-        errorMessage = e.format();
-      }
-      logger.warn("Invalid request body", {
-        error: errorMessage,
-        body,
-      });
-      res.status(400).json({
-        error: errorMessage,
-        message: "Invalid request body",
-      });
-      return;
-    }
     let result: unknown | null = null;
     try {
+      logger.debug("Running handler");
       result = await asyncLocalStorage.run({logger}, async () => {
-        return func(validatedBody);
+        return func({
+          body: validatedBody,
+          headers: (
+              useHeaders ?
+                validatedHeaders :
+                headers
+          ) as Headers extends undefined ? IncomingHttpHeaders : ObjectFromList<Headers>,
+        });
       });
+      logger.debug("Handler completed", result);
     } catch (e) {
       logger.error("Error in handler", {
         error: e,

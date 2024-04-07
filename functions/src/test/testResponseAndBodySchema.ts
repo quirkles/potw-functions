@@ -6,8 +6,9 @@ import {bodySchema, responseSchema} from "./schemas";
 
 export const testResponseAndBody = onRequest(
   httpHandler(
-    (body) => {
+    (payload) => {
       const logger = getLogger();
+      const {body} = payload;
       const {
         username,
         password,

@@ -6,7 +6,11 @@ import {bodySchema} from "./schemas";
 
 export const testBody = onRequest(
   httpHandler(
-    (body) => {
+    (payload) => {
+      const {
+        body,
+        headers,
+      } = payload;
       const logger = getLogger();
       const {
         username,
@@ -17,6 +21,14 @@ export const testBody = onRequest(
         username,
         password,
       });
-    }, {bodySchema}
+      logger.info("headers here", {
+        test: headers["x-test-header"],
+        //   uncomment next line to see the type error
+        // shouldError: headers["not-in-use-headers"],
+      });
+    }, {
+      bodySchema,
+      useHeaders: ["x-test-header"] as const,
+    }
   )
 );
