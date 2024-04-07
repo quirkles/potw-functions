@@ -5,11 +5,13 @@ import {sign} from "jsonwebtoken";
 
 import {OAuth2Client} from "google-auth-library";
 
-import {initializeAppAdmin} from "../services/firebase";
-import {saveOrGetId, setField} from "../services/firestore/user";
-import {getConfig} from "../config";
-import {getDb} from "../db/dbClient";
-import {users} from "../db/schema/user";
+import {getConfig} from "../../config";
+
+import {initializeAppAdmin} from "../../services/firebase";
+import {saveOrGetId, setField} from "../../services/firestore/user";
+
+import {getDb} from "../../db/dbClient";
+import {users} from "../../db/schema/user";
 
 export const handleGoogleLogin = onRequest({cors: true}, async (request, response) => {
   initializeAppAdmin();

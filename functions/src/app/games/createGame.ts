@@ -1,9 +1,11 @@
 import {onRequest} from "firebase-functions/v2/https";
-import {getDb} from "../db/dbClient";
 import {z} from "zod";
-import {games} from "../db/schema/game";
-import {users} from "../db/schema/user";
-import {gamesToUsers} from "../db/schema/games_to_users";
+
+import {getDb} from "../../db/dbClient";
+import {games} from "../../db/schema/game";
+import {users} from "../../db/schema/user";
+import {gamesToUsers} from "../../db/schema/games_to_users";
+
 
 const createGamePayloadSchema = z.object({
   name: z.string(),

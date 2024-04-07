@@ -3,10 +3,11 @@ import * as logger from "firebase-functions/logger";
 
 import {sign} from "jsonwebtoken";
 
-import {initializeAppAdmin} from "../services/firebase";
-import {saveOrGetId, setField} from "../services/firestore/user";
-import {getDb} from "../db/dbClient";
-import {users} from "../db/schema/user";
+import {initializeAppAdmin} from "../../services/firebase";
+import {saveOrGetId, setField} from "../../services/firestore/user";
+
+import {getDb} from "../../db/dbClient";
+import {users} from "../../db/schema/user";
 
 export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
   initializeAppAdmin();

@@ -1,7 +1,8 @@
 import {onRequest} from "firebase-functions/v2/https";
-import {getDb} from "../db/dbClient";
 import {eq} from "drizzle-orm";
-import {users} from "../db/schema/user";
+
+import {getDb} from "../../db/dbClient";
+import {users} from "../../db/schema/user";
 
 export const fetchUserById = onRequest(
   async (req, res) => {
@@ -18,8 +19,8 @@ export const fetchUserById = onRequest(
     const result = await db.query.users.findFirst({
       where: eq(users.id, String(id)),
       with: {
-        gamesAsParticipant: shouldIncludeGames as any,
-        gamesAsAdmin: shouldIncludeGames as any,
+        gamesAsParticipant: shouldIncludeGames as true,
+        gamesAsAdmin: shouldIncludeGames as true,
       },
     });
     if (!result) {

@@ -1,7 +1,8 @@
 import {onMessagePublished} from "firebase-functions/v2/pubsub";
 import {z} from "zod";
-import {getDb} from "../db/dbClient";
-import {users} from "../db/schema/user";
+
+import {getDb} from "../../db/dbClient";
+import {users} from "../../db/schema/user";
 
 const userPayloadSchema = z.object({
   firestoreId: z.string(),

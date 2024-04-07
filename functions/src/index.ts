@@ -1,19 +1,28 @@
-import {handleGoogleLogin} from "./auth/handleGoogleLogin";
-import {handleSpotifyLogin} from "./auth/handleSpotifyLogin";
-import {handleEmailLogin} from "./auth/handleEmailLogin";
-import {verifyOtpFn as verifyOtp} from "./auth/verifyOtp";
-import {createUser} from "./auth/createUser";
+import * as appFunctions from "./app/functions";
+import * as testFunctions from "./test/functions";
 
-import {createGame} from "./games/createGame";
+const {
+  auth,
+  user,
+  game,
+} = appFunctions;
 
-import {fetchUserById} from "./users/fetchUserById";
+export const app = {
+  auth,
+  user,
+  game,
+};
 
-export {
-  handleGoogleLogin,
-  handleSpotifyLogin,
-  handleEmailLogin,
-  verifyOtp,
-  createUser,
-  createGame,
-  fetchUserById,
+const {
+  testBody,
+  testResponse,
+  testLogger,
+  testResponseAndBody,
+} = testFunctions;
+
+export const test = {
+  body: testBody,
+  response: testResponse,
+  logger: testLogger,
+  responseAndBody: testResponseAndBody,
 };

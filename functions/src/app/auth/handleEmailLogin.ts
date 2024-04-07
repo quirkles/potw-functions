@@ -5,9 +5,10 @@ import * as logger from "firebase-functions/logger";
 
 import * as sg from "@sendgrid/mail";
 
-import {createOtpForEmail, saveOrGetId} from "../services/firestore/user";
-import {initializeAppAdmin} from "../services/firebase";
-import {getConfig} from "../config";
+import {getConfig} from "../../config";
+
+import {createOtpForEmail, saveOrGetId} from "../../services/firestore/user";
+import {initializeAppAdmin} from "../../services/firebase";
 export const handleEmailLogin = onRequest({cors: true}, async (req, resp) => {
   initializeAppAdmin();
   logger.info(`body: ${JSON.stringify(req.body)}`);

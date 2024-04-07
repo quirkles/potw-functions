@@ -10,7 +10,12 @@
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "migrations:run:dev": "",
-    "deploy:dev": "cp .env.dev .env && firebase deploy --only functions && rm .env",
+    "deploy-only:app:dev": "cp .env.dev .env && firebase deploy --only functions:app && rm .env",
+    "deploy-only:test:dev": "cp .env.dev .env && firebase deploy --only functions:test && rm .env",
+    "deploy-only:dev": "cp .env.dev .env && firebase deploy --only functions && rm .env",
+    "deploy:test:dev": "npm run lint && npm run build && npm run deploy-only:test:dev",
+    "deploy:app:dev": "npm run lint && npm run build && npm run deploy-only:app:dev",
+    "deploy:dev": "npm run lint && npm run build && npm run deploy-only:dev",
     "logs": "firebase functions:log"
   },
   "engines": {
@@ -18,6 +23,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@google-cloud/logging-winston": "^6.0.0",
     "@google-cloud/secret-manager": "^5.1.0",
     "@sendgrid/mail": "^8.1.1",
     "drizzle-orm": "^0.30.1",
@@ -28,9 +34,11 @@
     "postgres": "^3.4.3",
     "reflect-metadata": "^0.2.1",
     "typeorm": "^0.3.20",
+    "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^5.12.0",
     "@typescript-eslint/parser": "^5.12.0",
     "eslint": "^8.9.0",
