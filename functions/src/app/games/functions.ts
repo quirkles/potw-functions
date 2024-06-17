@@ -1,1 +1,1 @@
-export {createGame} from "./createGame";
+export {createGame as create} from "./createGame";
