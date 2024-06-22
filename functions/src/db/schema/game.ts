@@ -15,6 +15,8 @@ export const games = pgTable("games", {
   adminId: uuid("admin_id").references(() => users.id),
 });
 
+export type SelectGame = typeof games.$inferSelect
+
 export const gamesRelations = relations(games, ({one, many}) => ({
   admin: one(users, {
     fields: [games.adminId],
