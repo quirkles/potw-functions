@@ -10,6 +10,7 @@ export const games = pgTable("games", {
   name: varchar("name").notNull(),
   description: varchar("description"),
   startDate: date("startDate", {mode: "string"}).notNull(),
+  endDate: date("endDate", {mode: "string"}),
   period: varchar("period").notNull(),
   isPrivate: boolean("is_private").notNull().default(false),
   adminId: uuid("admin_id").references(() => users.id),

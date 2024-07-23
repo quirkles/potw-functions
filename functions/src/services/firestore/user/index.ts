@@ -2,6 +2,18 @@ import {randomBytes} from "crypto";
 import {getFirestore} from "firebase-admin/firestore";
 import {makeId} from "../../utils/string";
 import * as logger from "firebase-functions/logger";
+
+export async function getIdFromSqlId(sqlId: string): Promise<string | null> {
+  const db = getFirestore();
+  const users = await db.collection("users").where("sqlId", "==", sqlId).get();
+  if (users.size === 0) {
+    return null;
+  } else if (users.size > 1) {
+    throw new Error("Multiple users found with the same sqlId");
+  }
+  return users.docs[0].id;
+}
+
 /**
  * This function checks if a user with the given email exists in the Firestore database.
  * If the user exists, it returns the user's ID.

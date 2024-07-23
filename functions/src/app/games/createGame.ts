@@ -7,6 +7,8 @@ import {users} from "../../db/schema/user";
 import {gamesToUsers} from "../../db/schema/games_to_users";
 import {eq} from "drizzle-orm";
 import {periodSchema} from "./transforms";
+import {getIdFromSqlId} from "../../services/firestore/user";
+import {initializeAppAdmin} from "../../services/firebase";
 
 export const createGamePayloadSchema = z.object({
   name: z.string(),
@@ -14,11 +16,13 @@ export const createGamePayloadSchema = z.object({
   isPrivate: z.boolean(),
   adminId: z.string(),
   startDate: z.string(),
+  endDate: z.string().or(z.null()),
   addAdminAsPlayer: z.boolean(),
   period: periodSchema,
 });
 
 export const createGame = onRequest(async (req, res) => {
+  initializeAppAdmin();
   const db = getDb();
   const validated = createGamePayloadSchema.parse(req.body);
   let newGameId;
@@ -36,6 +40,7 @@ export const createGame = onRequest(async (req, res) => {
       isPrivate: validated.isPrivate,
       adminId: validated.adminId,
       startDate: validated.startDate,
+      endDate: validated.endDate,
       period: periodString,
     }).returning({
       insertedId: games.id,
@@ -45,13 +50,19 @@ export const createGame = onRequest(async (req, res) => {
       throw new Error("Admin not found");
     }
     const {
-      id,
+      id: sqlId,
       email,
       username= null,
     } = admin[0];
+    const firestoreId = await getIdFromSqlId(sqlId);
+    if (firestoreId === null) {
+      throw new Error("Admin not found in Firestore");
+    }
     admin = {
-      id,
-      name: username || email,
+      sqlId,
+      email,
+      firestoreId,
+      username,
     };
     newGameId = inserted.insertedId;
     if (validated.addAdminAsPlayer) {
