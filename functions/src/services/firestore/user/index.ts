@@ -42,11 +42,12 @@ export async function saveOrGetId(
 /**
  * Creates a one-time password (OTP) for the given email and invalidates any existing OTPs for the same email.
  *
+ * @param {string} id - The firestore id for the user.
  * @param {string} email - The email for which to create the OTP.
  * @return {Promise<string>} A Promise that resolves to the otp.
  * @throws {Error} If there's an error while creating the OTP or invalidating existing OTPs.
  */
-export async function createOtpForEmail(email: string): Promise<{
+export async function createOtp(id: string, email: string): Promise<{
     otp: string;
     codeVerifier: string;
 }> {
@@ -66,6 +67,7 @@ export async function createOtpForEmail(email: string): Promise<{
   const codeVerifier = randomBytes(64).toString("hex");
   await otpDoc.set({
     email,
+    userId: id,
     otp,
     codeVerifier,
     createdAt: new Date(),
@@ -100,7 +102,9 @@ export async function verifyOtp(otp: string, codeVerifier: string): Promise<stri
   if (otpDocs.size === 1) {
     const otpDoc = otpDocs.docs[0];
     await otpDoc.ref.update({used: true, valid: false});
-    return otpDoc.data().email;
+    const {email, userId} = otpDoc.data();
+    await db.collection("users").doc(userId).update({verified: true});
+    return email;
   }
   if (otpDocs.size > 1) {
     return new Error("Unexpected number of OTPs found");

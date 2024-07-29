@@ -3,20 +3,21 @@ import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 
-import * as sg from "@sendgrid/mail";
-
 import {getConfig} from "../../config";
 
-import {createOtpForEmail, saveOrGetId} from "../../services/firestore/user";
+import {createOtp, saveOrGetId} from "../../services/firestore/user";
 import {initializeAppAdmin} from "../../services/firebase";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const sg = require("@sendgrid/mail");
+
 export const handleEmailLogin = onRequest({cors: true}, async (req, resp) => {
   initializeAppAdmin();
   logger.info(`body: ${JSON.stringify(req.body)}`);
   const email = req.body.email;
-  const [_, otpResponse] = await Promise.all([
-    saveOrGetId(email, true),
-    createOtpForEmail(email),
-  ]);
+  const otpResponse = await saveOrGetId(email, true).then((id) => {
+    return createOtp(id, email);
+  });
   const {otp, codeVerifier} = otpResponse;
   const secretManagerClient = new SecretManagerServiceClient();
   const [secretResponse] = await secretManagerClient.accessSecretVersion({
