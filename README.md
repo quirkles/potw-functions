@@ -8,8 +8,7 @@ These are the gcp functions for the POTW project. A standard firebase project.
 
 `cd functions && npm intsall` to move to the functions folder and install the deps there.
 
-`./scripts/decrypt_Secrets.sh` to decrypt the secrets/config values for the project.
-`./scripts/encrypt_Secrets.sh` to encrypt the secrets/config values for the project.
+`./scripts/decrypt_secrets.sh -e=local` to decrypt the secrets/config values for the project.
 
 `cd functions && npm run serve` to start the functions emulator.
 
