@@ -1,5 +1,4 @@
 import {onRequest} from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
 
 import {sign} from "jsonwebtoken";
 
@@ -8,11 +7,25 @@ import {saveOrGetId, setField} from "../../services/firestore/user";
 
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
+import {createLogger} from "../../services/Logger/Logger.pino";
+import {v4} from "uuid";
 
 export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
   initializeAppAdmin();
-  logger.info(`body: ${JSON.stringify(req.body)}`);
-  logger.info(`query: ${JSON.stringify(req.query)}`);
+  const logger = createLogger({
+    name: "handleSpotifyLogin",
+    labels: {
+      functionExecutionId: v4(),
+      correlationId: req.headers["x-correlation-id"] as string || v4(),
+    },
+  });
+  const {
+    body,
+    query,
+  } = req;
+
+  logger.info("handleSPotifyLogin: begin", {body, query});
+
   const response = await fetch("https://api.spotify.com/v1/me", {
     headers: {
       Authorization: "Bearer " + req.body.token,
@@ -21,7 +34,7 @@ export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
 
   const data = await response.json();
 
-  logger.info("from spotify", data);
+  logger.info("from spotify", {data});
 
   const firestoreId = await saveOrGetId(data.email);
   const db = getDb();
@@ -38,7 +51,7 @@ export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
 
   const sqlId = saved[0].insertedId;
 
-  await setField(firestoreId, "sqlId", sqlId);
+  logger.info("saved", {firestoreId, sqlId});
 
   await setField(firestoreId, "sqlId", sqlId);
 
@@ -47,6 +60,8 @@ export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
     firestoreId,
     sqlId,
   }, "super-secret");
+
+  logger.info("handleSpotifyLogin: end", {token});
 
   resp.json({token});
   return;

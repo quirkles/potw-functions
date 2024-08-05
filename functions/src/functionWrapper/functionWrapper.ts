@@ -6,8 +6,8 @@ import {TypeOf, z, ZodError, ZodSchema} from "zod";
 import {v4} from "uuid";
 
 import {type ObjectFromList, type OrPromise} from "../typeUtils";
-
-import {createLogger, Logger} from "./logger";
+import {Logger} from "../services/Logger/Logger";
+import {createLogger} from "../services/Logger/Logger.pino";
 
 const functionInstanceId = v4();
 
@@ -135,7 +135,9 @@ export function httpHandler<
           ) as Headers extends undefined ? IncomingHttpHeaders : ObjectFromList<Headers>,
         });
       });
-      logger.debug("Handler completed", result);
+      logger.debug("Handler completed", {
+        result,
+      });
     } catch (e) {
       logger.error("Error in handler", {
         error: e,
@@ -149,8 +151,11 @@ export function httpHandler<
         responseSchema.parse(result)
       );
       return;
-    } catch (e) {
-      logger.warn("Invalid response body", e);
+    } catch (err) {
+      logger.warn("Invalid response body", {
+        err,
+        body: result,
+      });
       res.status(200).send(result);
     }
   };

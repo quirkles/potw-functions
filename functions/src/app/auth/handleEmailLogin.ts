@@ -1,23 +1,54 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
 
 import {onRequest} from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
+
+import {v4} from "uuid";
 
 import {getConfig} from "../../config";
 
 import {createOtp, saveOrGetId} from "../../services/firestore/user";
 import {initializeAppAdmin} from "../../services/firebase";
+import {createLogger} from "../../services/Logger/Logger.pino";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sg = require("@sendgrid/mail");
 
-export const handleEmailLogin = onRequest({cors: true}, async (req, resp) => {
+export const handleEmailLogin = onRequest({
+  cors: true,
+}, async (req, resp) => {
+  const {
+    body,
+  } = req;
+
+  const logger = createLogger({
+    name: "createUser",
+    labels: {
+      functionExecutionId: v4(),
+      correlationId: req.headers["x-correlation-id"] as string || v4(),
+    },
+    shouldLogToConsole: getConfig().env === "local",
+  });
+
   initializeAppAdmin();
-  logger.info(`body: ${JSON.stringify(req.body)}`);
-  const email = req.body.email;
+
+  logger.info("handleEmailLogin: begin", {
+    body,
+  });
+
+  const email = body.email;
+  if (!email || !email.length) {
+    logger.warning("handleEmailLogin: email is required");
+    resp.status(400).send("Email is required");
+    return;
+  }
   const otpResponse = await saveOrGetId(email, true).then((id) => {
     return createOtp(id, email);
   });
+
+  logger.debug("handleEmailLogin: otpResponse", {
+    otpResponse,
+  });
+
   const {otp, codeVerifier} = otpResponse;
   const secretManagerClient = new SecretManagerServiceClient();
   const [secretResponse] = await secretManagerClient.accessSecretVersion({
@@ -25,7 +56,7 @@ export const handleEmailLogin = onRequest({cors: true}, async (req, resp) => {
   });
   const apiKey = secretResponse.payload?.data?.toString();
   if (!apiKey) {
-    logger.error("No api key found");
+    logger.error("handleEmailLogin: No api key found");
     resp.status(500).send("No api key found");
     return;
   }
@@ -41,8 +72,10 @@ export const handleEmailLogin = onRequest({cors: true}, async (req, resp) => {
   sg.setApiKey(apiKey);
   try {
     await sg.send(msg);
-  } catch (e) {
-    logger.error("Error sending email", e);
+  } catch (err) {
+    logger.error("handleEmailLogin: Error sending email", {
+      err,
+    });
   }
   resp.json({
     codeVerifier,

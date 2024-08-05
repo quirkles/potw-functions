@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "test",
+    "test": "jest",
     "deploy": "firebase deploy --only functions",
     "migrations:generate": "drizzle-kit generate:pg",
     "migrations:run:local": "ts-node drizzle.migrate.ts"
@@ -12,12 +12,18 @@
   "author": "quirkles",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/preset-typescript": "^7.24.7",
     "@faker-js/faker": "^8.4.1",
     "@google-cloud/pubsub": "^4.3.3",
+    "@jest/globals": "^29.7.0",
+    "babel-jest": "^29.7.0",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.20.14",
     "drizzle-orm": "^0.30.1",
     "firebase-tools": "^13.11.2",
+    "jest": "^29.7.0",
     "postgres": "^3.4.3",
     "ts-node": "^10.9.2",
     "uuid": "^9.0.1"
@@ -25,6 +31,7 @@
   "dependencies": {
     "@firebase/firestore": "^4.4.3",
     "@mobily/ts-belt": "^3.13.1",
-    "firebase-admin": "^12.0.0"
+    "firebase-admin": "^12.0.0",
+    "pino": "^9.3.2"
   }
 }

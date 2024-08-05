@@ -3,6 +3,9 @@ import {z} from "zod";
 
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
+import {createLogger} from "../../services/Logger/Logger.pino";
+import {v4} from "uuid";
+import {getConfig} from "../../config";
 
 const userPayloadSchema = z.object({
   firestoreId: z.string(),
@@ -13,16 +16,34 @@ const userPayloadSchema = z.object({
 type UserPayload = z.infer<typeof userPayloadSchema>;
 
 export const createUser = onMessagePublished("create-user", async (event) => {
-  console.log(`Received message: ${JSON.stringify(event.data.message.json)}`);
+  const {
+    correlationId = v4(),
+    ...payload
+  } = event.data.message.json;
+
+  const logger = createLogger({
+    name: "createUser",
+    labels: {
+      functionExecutionId: v4(),
+      correlationId,
+    },
+    shouldLogToConsole: getConfig().env === "local",
+  });
+
+  logger.info("createUser: begin", {payload});
+
   let validated: UserPayload;
   try {
-    validated = userPayloadSchema.parse(event.data.message.json);
-  } catch (e) {
-    console.error(`Error validating user payload: ${e}`);
+    validated = userPayloadSchema.parse(payload);
+  } catch (err) {
+    logger.warning("createUser: Error validating user payload", {
+      payload,
+      error: err,
+    });
     return;
   }
   validated.username = validated.username || validated.email;
   const db = getDb();
   await db.insert(users).values(validated);
-  console.log("inserted", validated);
+  logger.info("createUser: inserted", {validated});
 });

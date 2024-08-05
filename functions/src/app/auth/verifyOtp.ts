@@ -1,5 +1,4 @@
 import {onRequest} from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
 
 import {sign} from "jsonwebtoken";
 
@@ -8,17 +7,41 @@ import {initializeAppAdmin} from "../../services/firebase";
 
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
+import {createLogger} from "../../services/Logger/Logger.pino";
+import {getConfig} from "../../config";
+import {v4} from "uuid";
 export const verifyOtpFn = onRequest({cors: true}, async (req, resp) => {
   initializeAppAdmin();
-  logger.info(`body: ${JSON.stringify(req.body)}`);
+  const logger = createLogger({
+    logName: "verifyOtpFn",
+    shouldLogToConsole: getConfig().env === "local",
+    labels: {
+      functionExecutionId: v4(),
+      correlationId: req.headers["x-correlation-id"] as string || v4(),
+    },
+  });
+
+  logger.info("verifyOTPBegin", {
+    body: req.body,
+  });
+
   const {otp, codeVerifier} = req.body;
   const result = await verifyOtp(otp, codeVerifier);
-  logger.info(`result: ${result}`);
   if (result instanceof Error) {
+    logger.warning("verifyOtp: Error", {
+      err: result,
+    });
     resp.status(401).json({error: result.message});
     return;
   }
+  logger.info("verifyOtp: Result", {
+    result,
+  });
   const firestoreId = await saveOrGetId(result, true);
+
+  logger.info("verifyOtp: firestoreId", {
+    firestoreId,
+  });
 
   const db = getDb();
 
@@ -34,6 +57,10 @@ export const verifyOtpFn = onRequest({cors: true}, async (req, resp) => {
 
   const sqlId = saved[0].insertedId;
 
+  logger.info("verifyOtp: sqlId", {
+    sqlId,
+  });
+
   await setField(firestoreId, "sqlId", sqlId);
 
   const token = sign({
@@ -41,6 +68,9 @@ export const verifyOtpFn = onRequest({cors: true}, async (req, resp) => {
     firestoreId,
     sqlId,
   }, "super-secret");
+  logger.info("verifyOtp: token", {
+    token,
+  });
   resp.json({token});
   return;
 });

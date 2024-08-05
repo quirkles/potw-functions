@@ -9,6 +9,9 @@ import {eq} from "drizzle-orm";
 import {periodSchema} from "./transforms";
 import {getIdFromSqlId} from "../../services/firestore/user";
 import {initializeAppAdmin} from "../../services/firebase";
+import {createLogger} from "../../services/Logger/Logger.pino";
+import {getConfig} from "../../config";
+import {v4} from "uuid";
 
 export const createGamePayloadSchema = z.object({
   name: z.string(),
@@ -23,8 +26,19 @@ export const createGamePayloadSchema = z.object({
 
 export const createGame = onRequest(async (req, res) => {
   initializeAppAdmin();
+  const logger = createLogger({
+    logName: "createGame",
+    shouldLogToConsole: getConfig().env === "local",
+    labels: {
+      functionExecutionId: v4(),
+      correlationId: req.headers["x-correlation-id"] as string || v4(),
+    },
+  });
   const db = getDb();
   const validated = createGamePayloadSchema.parse(req.body);
+  logger.info("createGame: begin", {
+    payload: validated,
+  });
   let newGameId;
   let admin;
   const periodString: string = typeof validated.period === "string" ?
@@ -45,8 +59,12 @@ export const createGame = onRequest(async (req, res) => {
     }).returning({
       insertedId: games.id,
     });
+    logger.info("createGame: game inserted", {
+      inserted,
+    });
     admin = await tx.select().from(users).where(eq(users.id, validated.adminId)).limit(1);
     if (admin.length === 0) {
+      logger.warning("createGame: admin not found");
       throw new Error("Admin not found");
     }
     const {
@@ -56,6 +74,7 @@ export const createGame = onRequest(async (req, res) => {
     } = admin[0];
     const firestoreId = await getIdFromSqlId(sqlId);
     if (firestoreId === null) {
+      logger.warning("createGame: admin not found in Firestore");
       throw new Error("Admin not found in Firestore");
     }
     admin = {
@@ -64,6 +83,9 @@ export const createGame = onRequest(async (req, res) => {
       firestoreId,
       username,
     };
+    logger.info("createGame: admin found", {
+      admin,
+    });
     newGameId = inserted.insertedId;
     if (validated.addAdminAsPlayer) {
       await tx.insert(gamesToUsers).values({
