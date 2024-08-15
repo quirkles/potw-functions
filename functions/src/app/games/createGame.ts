@@ -1,60 +1,64 @@
-import {onRequest} from "firebase-functions/v2/https";
 import {z} from "zod";
 
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
-import {users} from "../../db/schema/user";
+import {SelectUser, users} from "../../db/schema/user";
 import {gamesToUsers} from "../../db/schema/games_to_users";
 import {eq} from "drizzle-orm";
 import {periodSchema} from "./transforms";
 import {getIdFromSqlId} from "../../services/firestore/user";
 import {initializeAppAdmin} from "../../services/firebase";
-import {createLogger} from "../../services/Logger/Logger.pino";
-import {getConfig} from "../../config";
-import {v4} from "uuid";
+import {getLogger} from "../../functionWrapper";
+import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 
 export const createGamePayloadSchema = z.object({
   name: z.string(),
-  description: z.string().optional(),
+  description: z.string().or(z.null()),
   isPrivate: z.boolean(),
   adminId: z.string(),
   startDate: z.string(),
   endDate: z.string().or(z.null()),
   addAdminAsPlayer: z.boolean(),
   period: periodSchema,
+  players: z.array(z.object({
+    email: z.string(),
+    id: z.string().or(z.null()),
+  })),
 });
 
-export const createGame = onRequest(async (req, res) => {
+const createGameReturnSchema = createGamePayloadSchema.extend({
+  id: z.string(),
+  admin: z.object({
+    sqlId: z.string(),
+    email: z.string(),
+    firestoreId: z.string(),
+    username: z.string().optional(),
+  }),
+});
+
+export const createGame = httpHandler(async (payload) => {
   initializeAppAdmin();
-  const logger = createLogger({
-    logName: "createGame",
-    shouldLogToConsole: getConfig().env === "local",
-    labels: {
-      functionExecutionId: v4(),
-      correlationId: req.headers["x-correlation-id"] as string || v4(),
-    },
-  });
+  const logger = getLogger();
   const db = getDb();
-  const validated = createGamePayloadSchema.parse(req.body);
   logger.info("createGame: begin", {
-    payload: validated,
+    payload: payload || "none",
   });
-  let newGameId;
-  let admin;
-  const periodString: string = typeof validated.period === "string" ?
-    validated.period :
-    "quantity" in validated.period ?
-      `${validated.period.quantity}-${validated.period.unit}` :
-      `${validated.period.recurrence}-${validated.period.dayOfWeek}`;
+  let newGameId: string | null = null;
+  let admin: Omit<SelectUser, "id"> & { sqlId: string } | null = null;
+  const periodString: string = typeof payload.period === "string" ?
+    payload.period :
+    "quantity" in payload.period ?
+      `${payload.period.quantity}-${payload.period.unit}` :
+      `${payload.period.recurrence}-${payload.period.dayOfWeek}`;
 
   await db.transaction(async (tx) => {
     const [inserted] = await tx.insert(games).values({
-      name: validated.name,
-      description: validated.description,
-      isPrivate: validated.isPrivate,
-      adminId: validated.adminId,
-      startDate: validated.startDate,
-      endDate: validated.endDate,
+      name: payload.name,
+      description: payload.description,
+      isPrivate: payload.isPrivate,
+      adminId: payload.adminId,
+      startDate: payload.startDate,
+      endDate: payload.endDate,
       period: periodString,
     }).returning({
       insertedId: games.id,
@@ -62,8 +66,8 @@ export const createGame = onRequest(async (req, res) => {
     logger.info("createGame: game inserted", {
       inserted,
     });
-    admin = await tx.select().from(users).where(eq(users.id, validated.adminId)).limit(1);
-    if (admin.length === 0) {
+    const adminResults = await tx.select().from(users).where(eq(users.id, payload.adminId)).limit(1);
+    if (adminResults.length === 0) {
       logger.warning("createGame: admin not found");
       throw new Error("Admin not found");
     }
@@ -71,7 +75,7 @@ export const createGame = onRequest(async (req, res) => {
       id: sqlId,
       email,
       username= null,
-    } = admin[0];
+    } = adminResults[0];
     const firestoreId = await getIdFromSqlId(sqlId);
     if (firestoreId === null) {
       logger.warning("createGame: admin not found in Firestore");
@@ -81,22 +85,33 @@ export const createGame = onRequest(async (req, res) => {
       sqlId,
       email,
       firestoreId,
-      username,
+      username: username || email,
     };
     logger.info("createGame: admin found", {
       admin,
     });
     newGameId = inserted.insertedId;
-    if (validated.addAdminAsPlayer) {
+    if (payload.addAdminAsPlayer) {
       await tx.insert(gamesToUsers).values({
         gameId: newGameId,
-        userId: validated.adminId,
+        userId: payload.adminId,
       });
     }
   });
-  res.status(201).send({
+  if (newGameId === null) {
+    logger.warning("createGame: game not created");
+    throw new Error("Game not created");
+  }
+  if (admin === null) {
+    logger.warning("createGame: admin not found");
+    throw new Error("Admin not found");
+  }
+  return {
     id: newGameId,
     admin,
-    ...validated,
-  });
+    ...payload,
+  };
+}, {
+  payloadSchema: createGamePayloadSchema,
+  responseSchema: createGameReturnSchema,
 });

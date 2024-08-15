@@ -1,4 +1,4 @@
-import {getLogger} from "../../functionWrapper/functionWrapper";
+import {getLogger} from "../../functionWrapper";
 
 export function randomInt(min: number, max: number): number {
   const logger = getLogger();

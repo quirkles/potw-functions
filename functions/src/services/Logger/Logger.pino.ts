@@ -115,7 +115,7 @@ class PinoLogger extends Logger {
     configOrLogger?: LoggerOptions | PLogger<LogLevel>,
     config?: LoggerOptions
   ) {
-    super(config);
+    super(config || configOrLogger as LoggerOptions);
     if (!configOrLogger) {
       this.config = {};
       this.pLogger = createPinoLogger(this.config);

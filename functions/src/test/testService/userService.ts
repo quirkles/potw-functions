@@ -1,4 +1,4 @@
-import {getLogger} from "../../functionWrapper/functionWrapper";
+import {getLogger} from "../../functionWrapper";
 
 async function initializeStore(): Promise<Record<string, string>> {
   const logger = getLogger();

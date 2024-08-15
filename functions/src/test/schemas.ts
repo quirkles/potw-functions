@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-export const bodySchema = z.object({
+export const payloadSchema = z.object({
   username: z.string(),
   password: z.string(),
 });
