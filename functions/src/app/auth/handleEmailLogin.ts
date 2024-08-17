@@ -57,7 +57,7 @@ export const handleEmailLogin = onRequest({
   const apiKey = secretResponse.payload?.data?.toString();
   if (!apiKey) {
     logger.error("handleEmailLogin: No api key found");
-    resp.status(500).send("No api key found");
+    resp.status(500).send("No sendgrid api key found");
     return;
   }
   const msg = {

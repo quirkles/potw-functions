@@ -1,7 +1,8 @@
 import {randomBytes} from "crypto";
 import {getFirestore} from "firebase-admin/firestore";
 import {makeId} from "../../utils/string";
-import * as logger from "firebase-functions/logger";
+import {sendInviteToEmail} from "../../email/invite";
+import {getLogger} from "../../../functionWrapper";
 
 export async function getIdFromSqlId(sqlId: string): Promise<string | null> {
   const db = getFirestore();
@@ -36,6 +37,36 @@ export async function saveOrGetId(
     await newUser.set({email, verified: !needsVerification, createdAt: new Date(), updatedAt: new Date()});
     return newUser.id;
   } else {
+    return users.docs[0].id;
+  }
+}
+
+export async function inviteOrGetId(
+  email: string,
+  invitor: string
+): Promise<string> {
+  const logger = getLogger();
+  logger.info("inviteOrGetId: begin", {
+    email,
+    invitor,
+  });
+  const db = getFirestore();
+  const users = await db.collection("users").where("email", "==", email).get();
+  if (users.size === 0) {
+    // Create a new user and invite them
+    const newUser = db.collection("users").doc();
+    logger.info("inviteOrGetId: creating new user", {
+      newUser: newUser.id,
+    });
+    await Promise.all([
+      newUser.set({email, verified: false, createdAt: new Date(), updatedAt: new Date()}),
+      sendInviteToEmail(email, invitor).catch((error) => {
+        logger.error("Error sending invite email", {email, invitor, error});
+      }),
+    ]);
+    return newUser.id;
+  } else {
+    logger.info("inviteOrGetId: user already exists");
     return users.docs[0].id;
   }
 }
@@ -91,6 +122,7 @@ export async function createOtp(id: string, email: string): Promise<{
  */
 export async function verifyOtp(otp: string, codeVerifier: string): Promise<string | Error> {
   const db = getFirestore();
+  const logger = getLogger();
   logger.info(`otp: ${otp}, codeVerifier: ${codeVerifier}`);
   const otpQuery = db.collection("otp")
     .where("otp", "==", otp)
