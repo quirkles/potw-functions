@@ -108,10 +108,10 @@ export const createGame = httpHandler(async (payload) => {
         id: user.sqlId,
       }));
     });
-    existingUsers = await tx.select().from(users).where(inArray(
+    existingUsers = existingUserIds.length ? await tx.select().from(users).where(inArray(
       users.firestoreId,
       existingUserIds,
-    ));
+    )) : [];
     const firestoreId = await getIdFromSqlId(sqlId);
     if (firestoreId === null) {
       logger.warning("createGame: admin not found in Firestore");
@@ -138,15 +138,17 @@ export const createGame = httpHandler(async (payload) => {
       gameId: newGameId,
       playerIds,
     });
-    await tx.insert(gamesToUsers)
-      .values(
-        playerIds.map(
-          (playerId) => ({
-            gameId: newGameId as string,
-            userId: playerId,
-          })
-        )
-      );
+    if (playerIds.length >0) {
+      await tx.insert(gamesToUsers)
+        .values(
+          playerIds.map(
+            (playerId) => ({
+              gameId: newGameId as string,
+              userId: playerId,
+            })
+          )
+        );
+    }
   });
   if (newGameId === null) {
     logger.warning("createGame: game not created");
