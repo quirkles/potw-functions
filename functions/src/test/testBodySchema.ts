@@ -1,25 +1,25 @@
 import {onRequest} from "firebase-functions/v2/https";
 
-import {responseSchema} from "./schemas";
+import {payloadSchema} from "./schemas";
 import {httpHandler} from "../functionWrapper/httpfunctionWrapper";
 import {getLogger} from "../functionWrapper";
 
 
 export const testBody = onRequest(
   httpHandler(
-    (payload) => {
+    ({body}) => {
       const logger = getLogger();
       const {
         username,
         password,
         // age, // Uncomment this line to see the type error
-      } = payload;
+      } = body;
       logger.info("Body here", {
         username,
         password,
       });
     }, {
-      responseSchema,
+      bodySchema: payloadSchema,
     }
   )
 );

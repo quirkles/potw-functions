@@ -19,9 +19,13 @@ export const testResponse = onRequest(
         password,
       });
       return {
-        // Comment the next line to see the type error
-        message: "Test function completed successfully",
+        response: {
+          // Comment the next line to see the type error
+          message: "Test function completed successfully",
+        },
       };
-    }, {responseSchema}
+    }, {
+      responseSchema: responseSchema,
+    }
   )
 );

@@ -7,22 +7,25 @@ import {getLogger} from "../functionWrapper";
 
 export const testResponseAndBody = onRequest(
   httpHandler(
-    (payload) => {
+    ({body}) => {
       const logger = getLogger();
       const {
         username,
         password,
-      } = payload;
+      } = body;
       logger.info("Body here", {
         username,
         password,
       });
       return {
-        // Comment the next line to see the type error
-        message: "Test function completed successfully",
+        response: {
+
+          // Comment the next line to see the type error
+          message: "Test function completed successfully",
+        },
       };
     }, {
-      payloadSchema,
+      bodySchema: payloadSchema,
       responseSchema,
     }
   )

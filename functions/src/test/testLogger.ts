@@ -6,7 +6,7 @@ import {getLogger} from "../functionWrapper";
 
 export const testLogger = onRequest(
   httpHandler(
-    async (body) => {
+    async ({body}) => {
       const logger = getLogger();
       logger.debug("Test debug message", {
         messageLevel: "debug",
@@ -36,7 +36,9 @@ export const testLogger = onRequest(
       const user = await getUser();
       logger.debug("User:", user);
       return {
-        message: "Test function completed successfully",
+        response: {
+          message: "Test function completed successfully",
+        },
       };
     }
   )

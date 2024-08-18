@@ -1,62 +1,32 @@
-import {z} from "zod";
+import {inArray} from "drizzle-orm/sql/expressions/conditions";
+import {eq} from "drizzle-orm";
 
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
 import {SelectUser, users} from "../../db/schema/user";
 import {gamesToUsers} from "../../db/schema/games_to_users";
-import {eq} from "drizzle-orm";
-import {periodSchema} from "./transforms";
+
 import {getIdFromSqlId} from "../../services/firestore/user";
 import {initializeAppAdmin} from "../../services/firebase";
+
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {inviteUsers} from "../../services/users/inviteUsers";
-import {inArray} from "drizzle-orm/sql/expressions/conditions";
+import {createGamePayloadSchema, gameSchema, PeriodString} from "./schemas";
+import {periodToPeriodString} from "./transforms";
 
-export const createGamePayloadSchema = z.object({
-  name: z.string(),
-  description: z.string().or(z.null()),
-  isPrivate: z.boolean(),
-  adminId: z.string(),
-  startDate: z.string(),
-  endDate: z.string().or(z.null()),
-  addAdminAsPlayer: z.boolean(),
-  period: periodSchema,
-  players: z.array(z.object({
-    email: z.string(),
-    firestoreId: z.string().or(z.null()),
-  })),
-});
-
-const createGameReturnSchema = createGamePayloadSchema.extend({
-  id: z.string(),
-  admin: z.object({
-    sqlId: z.string(),
-    email: z.string(),
-    firestoreId: z.string(),
-    username: z.string().optional(),
-  }),
-  players: z.array(z.object({
-    email: z.string(),
-    fireStoreId: z.string().or(z.null()),
-    sqlId: z.string().or(z.null()),
-  })),
-});
-
-export const createGame = httpHandler(async (payload) => {
+export const createGame = httpHandler(async ({
+  body,
+}) => {
   initializeAppAdmin();
   const logger = getLogger();
   const db = getDb();
   logger.info("createGame: begin", {
-    payload: payload || "none",
+    payload: body || "none",
   });
   let newGameId: string | null = null;
   let admin: Omit<SelectUser, "id"> & { sqlId: string } | null = null;
-  const periodString: string = typeof payload.period === "string" ?
-    payload.period :
-    "quantity" in payload.period ?
-      `${payload.period.quantity}-${payload.period.unit}` :
-      `${payload.period.recurrence}-${payload.period.dayOfWeek}`;
+  const periodString: PeriodString = periodToPeriodString(body.period);
 
   const existingUserIds: string[] = [];
   const usersToInvite: string[] = [];
@@ -64,7 +34,7 @@ export const createGame = httpHandler(async (payload) => {
   let existingUsers: SelectUser[] = [];
   let invitedUsers: SelectUser[] = [];
 
-  for (const player of payload.players) {
+  for (const player of body.players) {
     if (player.firestoreId) {
       existingUserIds.push(player.firestoreId);
     } else {
@@ -75,12 +45,12 @@ export const createGame = httpHandler(async (payload) => {
 
   await db.transaction(async (tx) => {
     const [inserted] = await tx.insert(games).values({
-      name: payload.name,
-      description: payload.description,
-      isPrivate: payload.isPrivate,
-      adminId: payload.adminId,
-      startDate: payload.startDate,
-      endDate: payload.endDate,
+      name: body.name,
+      description: body.description,
+      isPrivate: body.isPrivate,
+      adminId: body.adminId,
+      startDate: body.startDate,
+      endDate: body.endDate,
       period: periodString,
     }).returning({
       insertedId: games.id,
@@ -88,7 +58,7 @@ export const createGame = httpHandler(async (payload) => {
     logger.info("createGame: game inserted", {
       inserted,
     });
-    const adminResults = await tx.select().from(users).where(eq(users.id, payload.adminId)).limit(1);
+    const adminResults = await tx.select().from(users).where(eq(users.id, body.adminId)).limit(1);
     if (adminResults.length === 0) {
       logger.warning("createGame: admin not found");
       throw new Error("Admin not found");
@@ -96,7 +66,7 @@ export const createGame = httpHandler(async (payload) => {
     const {
       id: sqlId,
       email,
-      username= null,
+      username = null,
     } = adminResults[0];
     invitedUsers = await inviteUsers(usersToInvite, email).then((users) => {
       logger.info("createGame: invited users", {
@@ -131,14 +101,14 @@ export const createGame = httpHandler(async (payload) => {
       ...existingUsers.map((user) => user.id),
       ...invitedUsers.map((user) => user.id),
     ];
-    if (payload.addAdminAsPlayer) {
-      playerIds.push(payload.adminId);
+    if (body.addAdminAsPlayer) {
+      playerIds.push(body.adminId);
     }
     logger.info("createGame: inserting gamesToUsers", {
       gameId: newGameId,
       playerIds,
     });
-    if (playerIds.length >0) {
+    if (playerIds.length > 0) {
       await tx.insert(gamesToUsers)
         .values(
           playerIds.map(
@@ -159,19 +129,22 @@ export const createGame = httpHandler(async (payload) => {
     throw new Error("Admin not found");
   }
   return {
-    ...payload,
-    id: newGameId,
-    admin,
-    players: [
-      ...existingUsers,
-      ...invitedUsers,
-    ].map((user) => ({
-      email: user.email,
-      fireStoreId: user.firestoreId,
-      sqlId: user.id,
-    })),
+    response: {
+      ...body,
+      id: newGameId,
+      admin,
+      players: [
+        ...existingUsers,
+        ...invitedUsers,
+      ].map((user) => ({
+        email: user.email,
+        firestoreId: user.firestoreId,
+        sqlId: user.id,
+        username: user.username || null,
+      })),
+    },
   };
 }, {
-  payloadSchema: createGamePayloadSchema,
-  responseSchema: createGameReturnSchema,
+  bodySchema: createGamePayloadSchema,
+  responseSchema: gameSchema,
 });

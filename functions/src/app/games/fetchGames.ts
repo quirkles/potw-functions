@@ -1,17 +1,22 @@
 import {onRequest} from "firebase-functions/v2/https";
-import {getDb} from "../../db/dbClient";
+import {v4} from "uuid";
 import {eq} from "drizzle-orm";
+
+import {getConfig} from "../../config";
+
+import {getDb} from "../../db/dbClient";
 import {SelectUser, users} from "../../db/schema/user";
 import {SelectGame} from "../../db/schema/game";
-import {GamePeriod, periodStringToPeriod} from "./transforms";
-import {ReturnUser, selectUserToReturnUser} from "../users/transform";
+
 import {createLogger} from "../../services/Logger/Logger.pino";
-import {getConfig} from "../../config";
-import {v4} from "uuid";
+
+import {ReturnUser, selectUserToReturnUser} from "../users/transform";
+import {periodStringToPeriod} from "./transforms";
+import {GamePeriod} from "./schemas";
 
 type FetchGamesResponse = Omit<SelectGame, "players" | "period" |"admin"> & {
     sqlId: string;
-    players: string[];
+    players: ReturnUser[];
     period: GamePeriod;
     admin: ReturnUser;
 }
@@ -44,7 +49,11 @@ export const fetchGames = onRequest(async (req, res) => {
         with: {
           game: {
             with: {
-              players: true,
+              players: {
+                with: {
+                  user: true,
+                },
+              },
               admin: true,
             },
           },
@@ -52,12 +61,15 @@ export const fetchGames = onRequest(async (req, res) => {
       },
       gamesAsAdmin: {
         with: {
-          players: true,
+          players: {
+            with: {
+              user: true,
+            },
+          },
           admin: true,
         },
       },
     },
-
   })]);
 
   if (!withGames) {
@@ -68,13 +80,23 @@ export const fetchGames = onRequest(async (req, res) => {
     return;
   }
 
+  logger.debug("fetchGames: games as participant", {
+    games: withGames.gamesAsParticipant,
+  });
+  logger.debug("fetchGames: games as admin", {
+    games: withGames.gamesAsAdmin,
+  });
+
   const allGames = (
     withGames.gamesAsParticipant
       .map(
         (p): FetchGamesResponse => ({
           ...p.game,
           sqlId: p.game.id,
-          players: p.game.players.map((player) => player.userId),
+          players: p.game.players.map((player) => ({
+            sqlId: player.user.id,
+            ...player.user,
+          })),
           period: periodStringToPeriod(p.game.period),
           admin: selectUserToReturnUser(p.game.admin as SelectUser),
         })
@@ -83,7 +105,10 @@ export const fetchGames = onRequest(async (req, res) => {
         (g): FetchGamesResponse => ({
           ...g,
           sqlId: g.id,
-          players: g.players.map((player) => player.userId),
+          players: g.players.map((player) => ({
+            sqlId: player.user.id,
+            ...player.user,
+          })),
           period: periodStringToPeriod(g.period),
           admin: selectUserToReturnUser(g.admin as SelectUser),
         }))
