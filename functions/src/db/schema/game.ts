@@ -1,8 +1,8 @@
-import {pgTable, uuid, varchar, boolean, date} from "drizzle-orm/pg-core";
 import {relations, sql} from "drizzle-orm";
+import {pgTable, uuid, varchar, boolean, date} from "drizzle-orm/pg-core";
 
-import {users} from "./user";
 import {gamesToUsers} from "./games_to_users";
+import {users} from "./user";
 
 
 export const games = pgTable("games", {

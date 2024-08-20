@@ -1,18 +1,14 @@
 import {onRequest} from "firebase-functions/v2/https";
-
-import {sign} from "jsonwebtoken";
-
 import {OAuth2Client} from "google-auth-library";
+import {sign} from "jsonwebtoken";
+import {v4} from "uuid";
 
 import {getConfig} from "../../config";
-
-import {initializeAppAdmin} from "../../services/firebase";
-import {saveOrGetId, setField} from "../../services/firestore/user";
-
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
 import {createLogger} from "../../services/Logger/Logger.pino";
-import {v4} from "uuid";
+import {initializeAppAdmin} from "../../services/firebase";
+import {saveOrGetId, setField} from "../../services/firestore/user";
 
 export const handleGoogleLogin = onRequest({
   cors: true,

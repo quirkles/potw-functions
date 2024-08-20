@@ -1,14 +1,12 @@
 import {onRequest} from "firebase-functions/v2/https";
-
 import {sign} from "jsonwebtoken";
-
-import {initializeAppAdmin} from "../../services/firebase";
-import {saveOrGetId, setField} from "../../services/firestore/user";
+import {v4} from "uuid";
 
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
 import {createLogger} from "../../services/Logger/Logger.pino";
-import {v4} from "uuid";
+import {initializeAppAdmin} from "../../services/firebase";
+import {saveOrGetId, setField} from "../../services/firestore/user";
 
 export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
   initializeAppAdmin();

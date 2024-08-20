@@ -1,6 +1,6 @@
 import * as path from "node:path";
-import {configDotenv} from "dotenv";
 
+import {configDotenv} from "dotenv";
 import * as admin from "firebase-admin";
 
 import {seedUsers} from "./seedUsers";

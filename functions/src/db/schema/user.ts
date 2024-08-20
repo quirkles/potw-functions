@@ -1,5 +1,6 @@
-import {pgTable, uuid, varchar} from "drizzle-orm/pg-core";
 import {relations, sql} from "drizzle-orm";
+import {pgTable, uuid, varchar} from "drizzle-orm/pg-core";
+
 import {games} from "./game";
 import {gamesToUsers} from "./games_to_users";
 

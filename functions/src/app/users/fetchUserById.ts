@@ -1,11 +1,11 @@
-import {onRequest} from "firebase-functions/v2/https";
 import {eq} from "drizzle-orm";
+import {onRequest} from "firebase-functions/v2/https";
+import {v4} from "uuid";
 
+import {getConfig} from "../../config";
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
 import {createLogger} from "../../services/Logger/Logger.pino";
-import {getConfig} from "../../config";
-import {v4} from "uuid";
 
 export const fetchUserById = onRequest(
   async (req, res) => {

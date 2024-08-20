@@ -1,7 +1,9 @@
-import {getFirestore} from "firebase-admin/firestore";
 import {faker} from "@faker-js/faker";
-import {getDb} from "./getDb";
+import {getFirestore} from "firebase-admin/firestore";
+
 import {users} from "../schema/user";
+
+import {getDb} from "./getDb";
 
 interface ISeedUsersProps {
     count?: number,

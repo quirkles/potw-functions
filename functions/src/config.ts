@@ -1,5 +1,4 @@
 import {defineInt, defineString} from "firebase-functions/params";
-
 import {z} from "zod";
 
 const configSchema = z.object({

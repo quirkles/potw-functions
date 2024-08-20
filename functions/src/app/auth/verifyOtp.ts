@@ -1,15 +1,13 @@
 import {onRequest} from "firebase-functions/v2/https";
-
 import {sign} from "jsonwebtoken";
+import {v4} from "uuid";
 
-import {saveOrGetId, setField, verifyOtp} from "../../services/firestore/user";
-import {initializeAppAdmin} from "../../services/firebase";
-
+import {getConfig} from "../../config";
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
 import {createLogger} from "../../services/Logger/Logger.pino";
-import {getConfig} from "../../config";
-import {v4} from "uuid";
+import {initializeAppAdmin} from "../../services/firebase";
+import {saveOrGetId, setField, verifyOtp} from "../../services/firestore/user";
 export const verifyOtpFn = onRequest({cors: true}, async (req, resp) => {
   initializeAppAdmin();
   const logger = createLogger({

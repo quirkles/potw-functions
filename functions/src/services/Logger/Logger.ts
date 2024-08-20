@@ -1,5 +1,6 @@
-import {Severity} from "@google-cloud/logging";
 import {Writable} from "stream";
+
+import {Severity} from "@google-cloud/logging";
 
 // The abstractions for the logger are defined here
 // As long as createLogger returns an ILogger compliant class the callers wont know any different

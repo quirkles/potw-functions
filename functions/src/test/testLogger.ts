@@ -1,8 +1,9 @@
 import {onRequest} from "firebase-functions/v2/https";
 
-import {getUser} from "./testService/userService";
-import {httpHandler} from "../functionWrapper/httpfunctionWrapper";
 import {getLogger} from "../functionWrapper";
+import {httpHandler} from "../functionWrapper/httpfunctionWrapper";
+
+import {getUser} from "./testService/userService";
 
 export const testLogger = onRequest(
   httpHandler(

@@ -1,13 +1,15 @@
-import {TypeOf, z, ZodError, ZodSchema} from "zod";
-import {v4} from "uuid";
-import {req as reqSerializer} from "pino-std-serializers";
-
-import {createLogger} from "../services/Logger/Logger.pino";
-import {HandlerFunction, HandlerFunctionConfig} from "./types";
-import {asyncLocalStorage, functionInstanceId} from "./index";
 import {HttpsFunction, onRequest} from "firebase-functions/v2/https";
-import {flattenObject} from "../utils/object";
+import {req as reqSerializer} from "pino-std-serializers";
+import {v4} from "uuid";
+import {TypeOf, z, ZodError, ZodSchema} from "zod";
+
 import {getConfig} from "../config";
+import {createLogger} from "../services/Logger/Logger.pino";
+import {flattenObject, isObject} from "../utils/object";
+
+import {HandlerFunction, HandlerFunctionConfig} from "./types";
+
+import {asyncLocalStorage, functionInstanceId} from "./index";
 
 
 export function httpHandler<
@@ -138,10 +140,10 @@ export function httpHandler<
   });
 }
 
-function hasResponse(result: any): result is { response: unknown } {
-  return result && "response" in result;
+function hasResponse(result: unknown): result is { response: unknown } {
+  return Boolean(result && isObject(result) && "response" in result);
 }
 
-function hasStatusCode(result: any): result is { statusCode: number } {
-  return result && "statusCode" in result;
+function hasStatusCode(result: unknown): result is { statusCode: number } {
+  return Boolean(result && isObject(result) && "statusCode" in result);
 }

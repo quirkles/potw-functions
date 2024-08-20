@@ -1,6 +1,8 @@
 import {AsyncLocalStorage} from "async_hooks";
-import {Logger} from "../services/Logger/Logger";
+
 import {v4} from "uuid";
+
+import {Logger} from "../services/Logger/Logger";
 
 export const functionInstanceId = v4();
 

@@ -1,5 +1,5 @@
-import {SelectUser, users} from "../../db/schema/user";
 import {getDb} from "../../db/dbClient";
+import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 
 export async function saveOrCreate(user: {

@@ -1,7 +1,7 @@
 import {getLogger} from "../../functionWrapper";
+import {isNotEmpty} from "../../utils/logic";
 import {inviteOrGetId} from "../firestore/user";
 import {saveOrCreate} from "../sql/user";
-import {isNotEmpty} from "../../utils/logic";
 
 export async function inviteUsers(emails: string[], invitor: string): Promise<{
     email: string,

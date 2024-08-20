@@ -1,14 +1,11 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
-
 import {onRequest} from "firebase-functions/v2/https";
-
 import {v4} from "uuid";
 
 import {getConfig} from "../../config";
-
-import {createOtp, saveOrGetId} from "../../services/firestore/user";
-import {initializeAppAdmin} from "../../services/firebase";
 import {createLogger} from "../../services/Logger/Logger.pino";
+import {initializeAppAdmin} from "../../services/firebase";
+import {createOtp, saveOrGetId} from "../../services/firestore/user";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sg = require("@sendgrid/mail");

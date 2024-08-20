@@ -1,18 +1,16 @@
+import {eq} from "drizzle-orm";
 import {onRequest} from "firebase-functions/v2/https";
 import {v4} from "uuid";
-import {eq} from "drizzle-orm";
 
 import {getConfig} from "../../config";
-
 import {getDb} from "../../db/dbClient";
-import {SelectUser, users} from "../../db/schema/user";
 import {SelectGame} from "../../db/schema/game";
-
+import {SelectUser, users} from "../../db/schema/user";
 import {createLogger} from "../../services/Logger/Logger.pino";
-
 import {ReturnUser, selectUserToReturnUser} from "../users/transform";
-import {periodStringToPeriod} from "./transforms";
+
 import {GamePeriod} from "./schemas";
+import {periodStringToPeriod} from "./transforms";
 
 type FetchGamesResponse = Omit<SelectGame, "players" | "period" |"admin"> & {
     sqlId: string;

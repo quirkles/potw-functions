@@ -1,8 +1,9 @@
 import {onRequest} from "firebase-functions/v2/https";
 
-import {responseSchema} from "./schemas";
-import {httpHandler} from "../functionWrapper/httpfunctionWrapper";
 import {getLogger} from "../functionWrapper";
+import {httpHandler} from "../functionWrapper/httpfunctionWrapper";
+
+import {responseSchema} from "./schemas";
 
 
 export const testResponse = onRequest(

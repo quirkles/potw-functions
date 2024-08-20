@@ -1,7 +1,7 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
 
-import {getLogger} from "../../functionWrapper";
 import {getConfig} from "../../config";
+import {getLogger} from "../../functionWrapper";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sg = require("@sendgrid/mail");

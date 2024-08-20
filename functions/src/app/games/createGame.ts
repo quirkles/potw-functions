@@ -1,17 +1,16 @@
-import {inArray} from "drizzle-orm/sql/expressions/conditions";
 import {eq} from "drizzle-orm";
+import {inArray} from "drizzle-orm/sql/expressions/conditions";
 
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
-import {SelectUser, users} from "../../db/schema/user";
 import {gamesToUsers} from "../../db/schema/games_to_users";
-
-import {getIdFromSqlId} from "../../services/firestore/user";
-import {initializeAppAdmin} from "../../services/firebase";
-
+import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
+import {initializeAppAdmin} from "../../services/firebase";
+import {getIdFromSqlId} from "../../services/firestore/user";
 import {inviteUsers} from "../../services/users/inviteUsers";
+
 import {createGamePayloadSchema, gameSchema, PeriodString} from "./schemas";
 import {periodToPeriodString} from "./transforms";
 

@@ -1,7 +1,8 @@
-import {pgTable, uuid} from "drizzle-orm/pg-core";
-import {users} from "./user";
-import {games} from "./game";
 import {relations} from "drizzle-orm";
+import {pgTable, uuid} from "drizzle-orm/pg-core";
+
+import {games} from "./game";
+import {users} from "./user";
 
 export const gamesToUsers = pgTable("games_to_users", {
   userId: uuid("user_id").notNull().references(() => users.id),

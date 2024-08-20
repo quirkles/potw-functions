@@ -1,8 +1,10 @@
 import {randomBytes} from "crypto";
+
 import {getFirestore} from "firebase-admin/firestore";
-import {makeId} from "../../utils/string";
-import {sendInviteToEmail} from "../../email/invite";
+
 import {getLogger} from "../../../functionWrapper";
+import {sendInviteToEmail} from "../../email/invite";
+import {makeId} from "../../utils/string";
 
 export async function getIdFromSqlId(sqlId: string): Promise<string | null> {
   const db = getFirestore();

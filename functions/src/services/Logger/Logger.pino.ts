@@ -1,7 +1,10 @@
-import {Severity} from "@google-cloud/logging";
-import {v4} from "uuid";
-import {pino, LoggerOptions as PLoggerOptions, Logger as PLogger} from "pino";
 import {Writable} from "stream";
+
+import {Severity} from "@google-cloud/logging";
+import {pino, LoggerOptions as PLoggerOptions, Logger as PLogger} from "pino";
+import {v4} from "uuid";
+
+import {deepMerge} from "../../utils/object";
 
 import {
   Logger,
@@ -11,7 +14,6 @@ import {
   LogLevel,
   logLevels,
 } from "./Logger";
-import {deepMerge} from "../../utils/object";
 
 export function createPinoLogger(
   config: {

@@ -41,5 +41,24 @@ module.exports = {
         "caughtErrorsIgnorePattern": "^_",
       },
     ],
+    "import/order": [
+      "error",
+      {
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": false,
+        },
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index",
+        ],
+        "newlines-between": "always",
+        "pathGroups": [],
+      },
+    ],
   },
 };

@@ -1,11 +1,11 @@
 import {onMessagePublished} from "firebase-functions/v2/pubsub";
+import {v4} from "uuid";
 import {z} from "zod";
 
+import {getConfig} from "../../config";
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
 import {createLogger} from "../../services/Logger/Logger.pino";
-import {v4} from "uuid";
-import {getConfig} from "../../config";
 
 const userPayloadSchema = z.object({
   firestoreId: z.string(),
