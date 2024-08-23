@@ -71,3 +71,5 @@ node_modules/
 # config files
 functions/.env.*
 !functions/.env.*.enc
+
+functions/lib/*
