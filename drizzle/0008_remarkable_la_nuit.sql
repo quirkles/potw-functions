@@ -1,0 +1,1 @@
+ALTER TABLE "pick" RENAME COLUMN "game_id" TO "game_week_id";

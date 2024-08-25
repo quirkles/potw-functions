@@ -1,0 +1,1 @@
+ALTER TABLE "game_weeks" ALTER COLUMN "start_date_time" SET DATA TYPE timestamp USING date('20170327') + "start_date_time";

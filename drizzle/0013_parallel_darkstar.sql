@@ -1,0 +1,1 @@
+ALTER TABLE "games" ALTER COLUMN "regularScheduledStartTimeUtc" SET DEFAULT '21:00:00';
