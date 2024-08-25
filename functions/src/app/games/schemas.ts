@@ -1,5 +1,8 @@
 import {z} from "zod";
 
+import {timeStringSchema} from "../../utils/dates";
+import {gameWeekSchema} from "../gameWeeks/schemas";
+
 export const periodSchema = z.union([
   z.enum(["daily", "biWeekly", "weekly", "monthly"]),
   z.object({
@@ -21,42 +24,6 @@ export const periodSchema = z.union([
 ]);
 
 export type GamePeriod = z.infer<typeof periodSchema>;
-
-export const createGamePayloadSchema = z.object({
-  name: z.string(),
-  description: z.string().or(z.null()),
-  isPrivate: z.boolean(),
-  adminId: z.string(),
-  startDate: z.string(),
-  endDate: z.string().or(z.null()),
-  addAdminAsPlayer: z.boolean(),
-  period: periodSchema,
-  players: z.array(z.object({
-    email: z.string(),
-    firestoreId: z.string().or(z.null()),
-  })),
-});
-export type CreateGamePayload = z.infer<typeof createGamePayloadSchema>;
-
-export const gameSchema = createGamePayloadSchema.omit({
-  adminId: true,
-  addAdminAsPlayer: true,
-}).extend({
-  id: z.string(),
-  admin: z.object({
-    sqlId: z.string(),
-    email: z.string(),
-    firestoreId: z.string(),
-    username: z.string().nullable(),
-  }),
-  players: z.array(z.object({
-    email: z.string(),
-    firestoreId: z.string().or(z.null()),
-    sqlId: z.string().or(z.null()),
-    username: z.string().nullable(),
-  })),
-});
-export type Game = z.infer<typeof gameSchema>;
 
 export const periodStringSchema = z.union([
   z.enum([
@@ -83,3 +50,46 @@ export const periodStringSchema = z.union([
 ]);
 
 export type PeriodString = z.infer<typeof periodStringSchema>;
+
+export const createGamePayloadSchema = z.object({
+  name: z.string(),
+  description: z.string().or(z.null()),
+  isPrivate: z.boolean(),
+  adminId: z.string(),
+  startDate: z.string(),
+  endDate: z.string().or(z.null()),
+  addAdminAsPlayer: z.boolean(),
+  regularScheduledStartTimeUtc: timeStringSchema,
+  period: periodSchema,
+  players: z.array(z.object({
+    email: z.string(),
+    firestoreId: z.string().or(z.null()),
+  })),
+});
+export type CreateGamePayload = z.infer<typeof createGamePayloadSchema>;
+
+export const gamePlayerSchema = z.object({
+  email: z.string(),
+  firestoreId: z.string().or(z.null()),
+  sqlId: z.string().or(z.null()),
+  username: z.string().nullable(),
+});
+
+export type GamePlayer = z.infer<typeof gamePlayerSchema>;
+
+
+export const gameSchema = createGamePayloadSchema.omit({
+  adminId: true,
+  addAdminAsPlayer: true,
+}).extend({
+  id: z.string(),
+  admin: z.object({
+    sqlId: z.string(),
+    email: z.string(),
+    firestoreId: z.string(),
+    username: z.string().nullable(),
+  }),
+  players: z.array(gamePlayerSchema),
+  gameWeeks: z.array(gameWeekSchema),
+});
+export type Game = z.infer<typeof gameSchema>;

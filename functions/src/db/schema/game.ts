@@ -1,6 +1,7 @@
 import {relations, sql} from "drizzle-orm";
-import {pgTable, uuid, varchar, boolean, date} from "drizzle-orm/pg-core";
+import {pgTable, uuid, varchar, boolean, date, time} from "drizzle-orm/pg-core";
 
+import {gameWeeks} from "./gameWeek";
 import {gamesToUsers} from "./games_to_users";
 import {users} from "./user";
 
@@ -11,9 +12,12 @@ export const games = pgTable("games", {
   description: varchar("description"),
   startDate: date("startDate", {mode: "string"}).notNull(),
   endDate: date("endDate", {mode: "string"}),
+  regularScheduledStartTimeUtc: time("regularScheduledStartTimeUtc", {
+    withTimezone: false,
+  }).notNull().default(sql`'21:00:00'`),
   period: varchar("period").notNull(),
-  isPrivate: boolean("is_private").notNull().default(false),
-  adminId: uuid("admin_id").references(() => users.id),
+  isPrivate: boolean("isPrivate").notNull().default(false),
+  adminId: uuid("adminId").references(() => users.id),
 });
 
 export type SelectGame = typeof games.$inferSelect
@@ -24,4 +28,5 @@ export const gamesRelations = relations(games, ({one, many}) => ({
     references: [users.id],
   }),
   players: many(gamesToUsers),
+  gameWeeks: many(gameWeeks),
 }));

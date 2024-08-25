@@ -17,4 +17,5 @@ export type SelectUser = typeof users.$inferSelect
 export const usersRelations = relations(users, ({many}) => ({
   gamesAsAdmin: many(games),
   gamesAsParticipant: many(gamesToUsers),
+  picks: many(gamesToUsers),
 }));

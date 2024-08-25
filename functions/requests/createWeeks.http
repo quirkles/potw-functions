@@ -1,0 +1,7 @@
+POST http://127.0.0.1:5001/quirkles-potw/us-central1/app-game-initializeGameWeeks
+Content-Type: application/json
+
+{
+    "gameId": "fe11f19c-e974-4365-a4c0-fee6b9d287ca",
+    "weeksToCreate": 2
+}

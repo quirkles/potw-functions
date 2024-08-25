@@ -1,0 +1,27 @@
+POST 127.0.0.1:5001/quirkles-potw/us-central1/app-game-create
+Content-Type: application/json
+
+{
+  "name": "azure-mouse-selenium",
+  "description": "work game",
+  "isPrivate": false,
+  "adminId": "e0f59c10-30f0-4389-81b0-9ec6e2c0a50c",
+  "startDate": "2024-08-31",
+  "endDate": null,
+  "addAdminAsPlayer": true,
+  "regularScheduledStartTimeUtc": "19:00:00",
+  "period": {
+    "recurrence": "every",
+    "dayOfWeek": "friday"
+  },
+  "players": [
+    {
+      "email": "pete24@gmail.com",
+      "firestoreId": "60uO2t0KdCnCveJtcNTG"
+    },
+    {
+      "email": "alan.klocko@yahoo.com",
+      "firestoreId": "e4rXqOa8xeQeqVuEp2Kz"
+    }
+  ]
+}

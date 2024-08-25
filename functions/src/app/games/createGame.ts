@@ -9,6 +9,7 @@ import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {initializeAppAdmin} from "../../services/firebase";
 import {getIdFromSqlId} from "../../services/firestore/user";
+import {initializeGameWeeksForGame} from "../../services/games/intializeNextGameWeeks";
 import {inviteUsers} from "../../services/users/inviteUsers";
 
 import {createGamePayloadSchema, gameSchema, PeriodString} from "./schemas";
@@ -102,6 +103,10 @@ export const createGame = httpHandler(async ({
     ];
     if (body.addAdminAsPlayer) {
       playerIds.push(body.adminId);
+      existingUsers.push({
+        id: admin.sqlId,
+        ...admin,
+      });
     }
     logger.info("createGame: inserting gamesToUsers", {
       gameId: newGameId,
@@ -127,11 +132,13 @@ export const createGame = httpHandler(async ({
     logger.warning("createGame: admin not found");
     throw new Error("Admin not found");
   }
+  const gameWeeks = await initializeGameWeeksForGame(newGameId, 2);
   return {
     response: {
       ...body,
       id: newGameId,
       admin,
+      gameWeeks,
       players: [
         ...existingUsers,
         ...invitedUsers,
