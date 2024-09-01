@@ -1,1 +1,1 @@
-export {fetchUserById} from "./fetchUserById";
+export {fetchUserById as fetchOne} from "./fetchUserById";
