@@ -11,6 +11,7 @@ export type HandlerFunctionConfig<
     querySchema?: QuerySchema,
     responseSchema?: ResponseSchema,
     loggerName?: string,
+    useAppCheck?: boolean,
 };
 
 export type HandlerFunction<
@@ -21,6 +22,7 @@ export type HandlerFunction<
     payload: {
         body: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown,
         query: QuerySchema extends ZodSchema ? TypeOf<QuerySchema> : unknown,
+        headers: Record<string, string>,
     },
 ) => OrPromise<ResponseSchema extends ZodSchema ? {
         statusCode: ErrorStatusCodes,

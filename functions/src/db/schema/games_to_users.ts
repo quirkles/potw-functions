@@ -1,5 +1,6 @@
 import {relations} from "drizzle-orm";
 import {pgTable, uuid} from "drizzle-orm/pg-core";
+import {z} from "zod";
 
 import {games} from "./game";
 import {users} from "./user";
@@ -22,3 +23,8 @@ export const gamesToUsersRelations = relations(gamesToUsers, ({one}) => ({
     references: [users.id],
   }),
 }));
+
+export const gamesToUsersSchema = z.object({
+  userId: z.string(),
+  gameId: z.string(),
+});

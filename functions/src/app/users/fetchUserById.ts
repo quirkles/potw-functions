@@ -1,54 +1,76 @@
 import {eq} from "drizzle-orm";
-import {onRequest} from "firebase-functions/v2/https";
 import {v4} from "uuid";
+import {z} from "zod";
 
 import {getConfig} from "../../config";
 import {getDb} from "../../db/dbClient";
-import {users} from "../../db/schema/user";
+import {User, users, userSchema} from "../../db/schema/user";
+import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {createLogger} from "../../services/Logger/Logger.pino";
 
-export const fetchUserById = onRequest(
-  async (req, res) => {
+export const fetchUserById = httpHandler(
+  async ({query, headers}) => {
     const logger =createLogger({
       name: "fetchUserById",
       shouldLogToConsole: getConfig().env === "local",
       labels: {
         functionExecutionId: v4(),
-        correlationId: req.headers["x-correlation-id"] as string || v4(),
+        correlationId: headers["x-correlation-id"] as string || v4(),
       },
     });
     logger.info("fetchUserById: begin", {
-      query: req.query,
+      query: query,
     });
     const {
-      id
-      , includeGames = "",
-    } = req.query;
+      id,
+      includeGames = false,
+    } = query;
     if (!id) {
       logger.warning("fetchUserById: id is required");
-      res.status(400).send("id is required");
-      return;
+      return {
+        statusCode: 400,
+        response: {
+          message: "id is required",
+        },
+      };
     }
     const shouldIncludeGames = includeGames === "true";
     const db = getDb();
-    const result = await db.query.users.findFirst({
+    const result: Record<string, unknown> = await db.query.users.findFirst({
       where: eq(users.id, String(id)),
       with: {
         gamesAsParticipant: shouldIncludeGames as true,
         gamesAsAdmin: shouldIncludeGames as true,
       },
-    });
+    }).then((res) => ({
+      ...res,
+      sqlId: res?.id,
+    }));
     if (!result) {
       logger.warning("fetchUserById: user not found", {
         id,
       });
-      res.status(404).send("user not found");
-      return;
+      return {
+        statusCode: 404,
+        body: {
+          response: "User not found",
+        },
+      };
     }
     logger.info("fetchUserById: success", {
       result,
     });
-    (result as Record<string, unknown>)["sqlId"] = result.id;
-    res.status(200).json(result);
-    return;
+    result["sqlId"] = result.id;
+
+    return {
+      statusCode: 200,
+      response: result as User,
+    };
+  }, {
+    querySchema: z.object({
+      id: z.string(),
+      includeGames: z.string().optional(),
+    }),
+    responseSchema: userSchema,
+    useAppCheck: true,
   });

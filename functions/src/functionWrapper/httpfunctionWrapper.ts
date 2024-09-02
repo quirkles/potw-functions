@@ -1,3 +1,4 @@
+import {getAppCheck} from "firebase-admin/app-check";
 import {HttpsFunction, onRequest} from "firebase-functions/v2/https";
 import {req as reqSerializer} from "pino-std-serializers";
 import {v4} from "uuid";
@@ -5,6 +6,7 @@ import {TypeOf, z, ZodError, ZodSchema} from "zod";
 
 import {getConfig} from "../config";
 import {createLogger} from "../services/Logger/Logger.pino";
+import {initializeAppAdmin} from "../services/firebase";
 import {flattenObject, isObject} from "../utils/object";
 
 import {HandlerFunction, HandlerFunctionConfig} from "./types";
@@ -24,6 +26,7 @@ export function httpHandler<
     bodySchema = z.any().optional(),
     querySchema = z.any().optional(),
     responseSchema = z.any().optional(),
+    useAppCheck = false,
   } = config || {};
   return onRequest(async (req, res) => {
     const logLabels: Record<string, string> = {
@@ -52,6 +55,35 @@ export function httpHandler<
     logger.info("Request received", {
       httpRequest: reqSerializer(req),
     });
+
+    logger.info("Initializing admin app");
+
+    initializeAppAdmin();
+
+    if (useAppCheck) {
+      const appCheckToken = String(headers["x-firebase-appcheck"]);
+      if (!appCheckToken) {
+        logger.warn("Request without App Check token");
+        res.status(401).send("Unauthorized");
+        return;
+      }
+      try {
+        logger.warn("Verifying App Check token", {
+          appCheckToken,
+        });
+        const appCheckClaims = await getAppCheck().verifyToken(appCheckToken);
+
+        logger.debug("App Check token verified", {
+          appCheckClaims,
+        });
+      } catch (err) {
+        logger.warn("Error verifying token", {
+          err,
+        });
+        res.status(401).send("Unauthorized");
+        return;
+      }
+    }
 
     let validatedBody: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown;
     try {
@@ -106,6 +138,7 @@ export function httpHandler<
         return func({
           body: validatedBody,
           query: validatedQuery,
+          headers: headers as Record<string, string>,
         });
       });
       if (hasResponse(result)) {
