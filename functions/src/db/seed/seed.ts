@@ -3,6 +3,7 @@ import * as path from "node:path";
 import {configDotenv} from "dotenv";
 import * as admin from "firebase-admin";
 
+import {seedGames} from "./seedGames";
 import {seedUsers} from "./seedUsers";
 
 async function main() {
@@ -33,6 +34,14 @@ async function main() {
 
   console.log("Users seeded.");
   console.log(JSON.stringify(users, null, 2));
+
+  const games = await seedGames({
+    count: seedCount,
+    userIds: users.map((user) => user.sqlId) as [string, ...string[]],
+  });
+
+  console.log("Games seeded.");
+  console.log(JSON.stringify(games, null, 2));
 }
 
 main()

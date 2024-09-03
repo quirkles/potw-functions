@@ -2,6 +2,7 @@ import {relations, sql} from "drizzle-orm";
 import {pgTable, uuid, varchar} from "drizzle-orm/pg-core";
 
 import {gameWeeks} from "./gameWeek";
+import {withDates} from "./shared/withDates";
 import {users} from "./user";
 
 export const pick = pgTable("pick", {
@@ -13,6 +14,7 @@ export const pick = pgTable("pick", {
   youtubeTrackId: uuid("youtube_track_id"),
   artist: varchar("artist").notNull(),
   title: varchar("title").notNull(),
+  ...withDates,
 });
 
 export const pickRelations = relations(pick, ({one, many}) => ({

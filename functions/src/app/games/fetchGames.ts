@@ -7,15 +7,15 @@ import {getDb} from "../../db/dbClient";
 import {SelectGame} from "../../db/schema/game";
 import {SelectUser, users} from "../../db/schema/user";
 import {createLogger} from "../../services/Logger/Logger.pino";
+import {Period} from "../../validation/game";
 import {ReturnUser, selectUserToReturnUser} from "../users/transform";
 
-import {GamePeriod} from "./schemas";
 import {periodStringToPeriod} from "./transforms";
 
 type FetchGamesResponse = Omit<SelectGame, "players" | "period" |"admin"> & {
     sqlId: string;
     players: ReturnUser[];
-    period: GamePeriod;
+    period: Period;
     admin: ReturnUser;
 }
 

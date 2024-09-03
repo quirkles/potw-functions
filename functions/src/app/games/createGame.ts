@@ -4,15 +4,17 @@ import {inArray} from "drizzle-orm/sql/expressions/conditions";
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
 import {gamesToUsers} from "../../db/schema/games_to_users";
-import {SelectUser, users} from "../../db/schema/user";
+import {users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {initializeAppAdmin} from "../../services/firebase";
 import {getIdFromSqlId} from "../../services/firestore/user";
 import {initializeGameWeeksForGame} from "../../services/games/intializeNextGameWeeks";
 import {inviteUsers} from "../../services/users/inviteUsers";
+import {gameSchema, PeriodString} from "../../validation/game";
+import {User, userSchema} from "../../validation/user";
 
-import {createGamePayloadSchema, gameSchema, PeriodString} from "./schemas";
+import {createGamePayloadSchema} from "./schemas";
 import {periodToPeriodString} from "./transforms";
 
 export const createGame = httpHandler(async ({
@@ -25,14 +27,16 @@ export const createGame = httpHandler(async ({
     payload: body || "none",
   });
   let newGameId: string | null = null;
-  let admin: Omit<SelectUser, "id"> & { sqlId: string } | null = null;
+  let newGameCreatedAt: string | null = null;
+  let newGameUpdatedAt: string | null = null;
+  let admin: User | null = null;
   const periodString: PeriodString = periodToPeriodString(body.period);
 
   const existingUserIds: string[] = [];
   const usersToInvite: string[] = [];
 
-  let existingUsers: SelectUser[] = [];
-  let invitedUsers: SelectUser[] = [];
+  let existingUsers: User[] = [];
+  let invitedUsers: User[] = [];
 
   for (const player of body.players) {
     if (player.firestoreId) {
@@ -54,6 +58,8 @@ export const createGame = httpHandler(async ({
       period: periodString,
     }).returning({
       insertedId: games.id,
+      createdAt: games.createdAt,
+      updatedAt: games.updatedAt,
     });
     logger.info("createGame: game inserted", {
       inserted,
@@ -67,21 +73,17 @@ export const createGame = httpHandler(async ({
       id: sqlId,
       email,
       username = null,
+      createdAt,
+      updatedAt,
     } = adminResults[0];
-    invitedUsers = await inviteUsers(usersToInvite, email).then((users) => {
-      logger.info("createGame: invited users", {
-        users,
-      });
-      return users.map((user) => ({
-        ...user,
-        username: null,
-        id: user.sqlId,
-      }));
-    });
+    invitedUsers = await inviteUsers(usersToInvite, email);
     existingUsers = existingUserIds.length ? await tx.select().from(users).where(inArray(
       users.firestoreId,
       existingUserIds,
-    )) : [];
+    )).then((results) => results.map((result) => userSchema.parse({
+      ...result,
+      sqlId: result.id,
+    }))) : [];
     const firestoreId = await getIdFromSqlId(sqlId);
     if (firestoreId === null) {
       logger.warning("createGame: admin not found in Firestore");
@@ -92,21 +94,22 @@ export const createGame = httpHandler(async ({
       email,
       firestoreId,
       username: username || email,
+      createdAt,
+      updatedAt,
     };
     logger.info("createGame: admin found", {
       admin,
     });
     newGameId = inserted.insertedId;
+    newGameCreatedAt = inserted.createdAt;
+    newGameUpdatedAt = inserted.updatedAt;
     const playerIds: string[] = [
-      ...existingUsers.map((user) => user.id),
-      ...invitedUsers.map((user) => user.id),
+      ...existingUsers.map((user) => user.sqlId),
+      ...invitedUsers.map((user) => user.sqlId),
     ];
     if (body.addAdminAsPlayer) {
       playerIds.push(body.adminId);
-      existingUsers.push({
-        id: admin.sqlId,
-        ...admin,
-      });
+      existingUsers.push(admin);
     }
     logger.info("createGame: inserting gamesToUsers", {
       gameId: newGameId,
@@ -133,21 +136,24 @@ export const createGame = httpHandler(async ({
     throw new Error("Admin not found");
   }
   const gameWeeks = await initializeGameWeeksForGame(newGameId, 2);
+  if (newGameCreatedAt === null || newGameUpdatedAt === null) {
+    logger.warning("createGame: game not created");
+    throw new Error("Game missing dates");
+  }
   return {
     response: {
       ...body,
+      sqlId: newGameId,
+      period: periodString,
       id: newGameId,
       admin,
       gameWeeks,
+      createdAt: newGameCreatedAt as string,
+      updatedAt: newGameUpdatedAt as string,
       players: [
         ...existingUsers,
         ...invitedUsers,
-      ].map((user) => ({
-        email: user.email,
-        firestoreId: user.firestoreId,
-        sqlId: user.id,
-        username: user.username || null,
-      })),
+      ],
     },
   };
 }, {

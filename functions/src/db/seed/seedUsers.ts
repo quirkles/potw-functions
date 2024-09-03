@@ -15,6 +15,10 @@ function initFirestore() {
   firestore = getFirestore();
 }
 
+const ensureEmailsIncluded = [
+  "al.quirk@gmail.com",
+];
+
 export async function seedUsers({
   count = 100,
 }: ISeedUsersProps) {
@@ -24,9 +28,10 @@ export async function seedUsers({
   const timeout = setTimeout(() => {
     scriptTimedOut = true;
   }, 1000 * 60 * 5);
-  let remaining = count;
+  let remaining = Math.max(count, ensureEmailsIncluded.length);
   while (remaining > 0 && !scriptTimedOut) {
-    const email = faker.internet.email().toLowerCase();
+    console.log(`Creating user ${remaining} of ${count}`);
+    const email = ensureEmailsIncluded.pop() || faker.internet.email().toLowerCase();
     const firestoreId = await createFirebaseUser({
       email,
     });
@@ -57,11 +62,10 @@ async function createFirebaseUser({
 }: {
   email: string
 }): Promise<null | string> {
-  const existingUsers = await firestore.collection("users").where("email", "==", email).get().then((snapshot) => {
-    return snapshot.size;
-  });
-  if (existingUsers > 0) {
-    return null;
+  const existingUsers = await firestore.collection("users").where("email", "==", email).limit(1).get();
+  if (existingUsers.docs.length > 0) {
+    // return existing user
+    return existingUsers.docs[0].id;
   }
   // Create a new user
   const newUser = firestore.collection("users").doc();
@@ -88,6 +92,11 @@ async function createSqlUser({
     username: email,
   }).returning({
     insertedId: users.id,
+  }).onConflictDoUpdate({
+    target: users.firestoreId,
+    set: {
+      email,
+    },
   });
 
   return inserted.insertedId;

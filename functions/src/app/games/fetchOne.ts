@@ -9,9 +9,10 @@ import {gamesToUsers} from "../../db/schema/games_to_users";
 import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
+import {Game, gameSchema} from "../../validation/game";
+import {User, userSchema} from "../../validation/user";
 import {GameWeek, gameWeekSchema} from "../gameWeeks/schemas";
 
-import {Game, gameSchema, gamePlayerSchema, GamePlayer} from "./schemas";
 import {periodStringToPeriod} from "./transforms";
 
 export const fetchOne = httpHandler(async ({query}) => {
@@ -82,7 +83,7 @@ function resultsToGames(results: {
     game_weeks: SelectGameWeek | null
 }[]):Game[] {
   const gamesMap = new Map<string, Game>();
-  const usersMap = new Map<string, GamePlayer & {gameId: string}>();
+  const usersMap = new Map<string, User & {gameId: string}>();
   const gameWeeksMap = new Map<string, GameWeek & {gameId: string}>();
 
   for (const result of results) {
@@ -105,7 +106,7 @@ function resultsToGames(results: {
         if (!existingUser) {
           usersMap.set(result.users.id, {
             gameId: result.games.id,
-            ...gamePlayerSchema.parse({
+            ...userSchema.parse({
               email: result.users.email,
               firestoreId: result.users.id,
               sqlId: result.users.id,

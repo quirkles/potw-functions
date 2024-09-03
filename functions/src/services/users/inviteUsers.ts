@@ -1,13 +1,10 @@
 import {getLogger} from "../../functionWrapper";
 import {isNotEmpty} from "../../utils/logic";
+import {User, userSchema} from "../../validation/user";
 import {inviteOrGetId} from "../firestore/user";
 import {saveOrCreate} from "../sql/user";
 
-export async function inviteUsers(emails: string[], invitor: string): Promise<{
-    email: string,
-    firestoreId: string,
-    sqlId: string,
-}[]> {
+export async function inviteUsers(emails: string[], invitor: string): Promise<User[]> {
   const logger = getLogger();
   logger.info("inviteUsers: begin", {
     emails: emails,
@@ -16,7 +13,7 @@ export async function inviteUsers(emails: string[], invitor: string): Promise<{
     emails.map((email) =>
       inviteOrGetId(email, invitor)
         .then((firestoreId) => saveOrCreate({email, firestoreId})
-          .then((user) => ({email, firestoreId, sqlId: user.id}))
+          .then((user) => userSchema.parse(user))
         ).catch((error) => {
           logger.error("inviteUsers: Error inviting user", {
             email,

@@ -24,7 +24,11 @@ export const gamesToUsersRelations = relations(gamesToUsers, ({one}) => ({
   }),
 }));
 
+export type SelectGamesToUsers = typeof gamesToUsers.$inferSelect;
+
 export const gamesToUsersSchema = z.object({
   userId: z.string(),
   gameId: z.string(),
 });
+
+export type GamesToUsers = z.infer<typeof gamesToUsersSchema>;

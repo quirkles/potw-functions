@@ -1,7 +1,7 @@
-import {GamePeriod, PeriodString} from "./schemas";
+import {Period, PeriodString} from "../../validation/game";
 
 
-export const periodStringToPeriod = (periodString: PeriodString): GamePeriod => {
+export const periodStringToPeriod = (periodString: PeriodString): Period => {
   if (
     periodString === "daily" ||
     periodString === "biWeekly" ||
@@ -24,7 +24,7 @@ export const periodStringToPeriod = (periodString: PeriodString): GamePeriod => 
   }
 };
 
-export const periodToPeriodString = (period: GamePeriod): PeriodString => {
+export const periodToPeriodString = (period: Period): PeriodString => {
   if (typeof period === "string") {
     return period;
   } else if ("recurrence" in period) {

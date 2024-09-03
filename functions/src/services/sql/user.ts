@@ -1,11 +1,12 @@
 import {getDb} from "../../db/dbClient";
-import {SelectUser, users} from "../../db/schema/user";
+import {users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
+import {User, userSchema} from "../../validation/user";
 
 export async function saveOrCreate(user: {
   email: string,
   firestoreId: string,
-}): Promise<SelectUser> {
+}): Promise<User> {
   const logger = getLogger();
   logger.info("saveOrCreate: begin", {
     user,
@@ -23,6 +24,8 @@ export async function saveOrCreate(user: {
       id: users.id,
       email: users.email,
       firestoreId: users.firestoreId,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
     })
     .catch((error) => {
       logger.error("saveOrCreate: Error saving user", {
@@ -42,10 +45,12 @@ export async function saveOrCreate(user: {
     logger.error("saveOrCreate: multiple results");
     throw new Error("Multiple results found");
   }
-  return Promise.resolve({
-    id: result[0].id,
+  return userSchema.parse({
+    sqlId: result[0].id,
     email,
     firestoreId,
     username: email,
+    createdAt: result[0].createdAt,
+    updatedAt: result[0].updatedAt,
   });
 }
