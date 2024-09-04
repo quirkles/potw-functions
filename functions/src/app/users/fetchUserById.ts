@@ -9,6 +9,7 @@ import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {HandlerFunction} from "../../functionWrapper/types";
 import {createLogger} from "../../services/Logger/Logger.pino";
 import {userSchema} from "../../validation/user";
+import {NotFoundError} from "../../utils/Errors";
 
 const querySchema = z.object({
   id: z.string(),
@@ -60,12 +61,7 @@ const handler: HandlerFunction<typeof anySchema, typeof querySchema, typeof user
     logger.warning("fetchUserById: user not found", {
       id,
     });
-    return {
-      statusCode: 404,
-      body: {
-        response: "User not found",
-      },
-    };
+    throw new NotFoundError("User not found");
   }
   logger.info("fetchUserById: success", {
     result: userResult,

@@ -7,6 +7,7 @@ import {TypeOf, z, ZodError, ZodSchema} from "zod";
 import {getConfig} from "../config";
 import {createLogger} from "../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../services/firebase";
+import {getResponseFromError} from "../utils/Errors";
 import {flattenObject, isObject} from "../utils/object";
 
 import {HandlerFunction, HandlerFunctionConfig} from "./types";
@@ -155,7 +156,11 @@ export function httpHandler<
         err: e,
         body,
       });
-      res.status(500).send("Internal server error");
+      const {
+        response,
+        statusCode,
+      } = getResponseFromError(e as Error);
+      res.status(statusCode).send(response);
       return;
     }
     try {
