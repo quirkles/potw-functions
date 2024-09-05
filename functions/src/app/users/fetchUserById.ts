@@ -8,8 +8,8 @@ import {users} from "../../db/schema/user";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {HandlerFunction} from "../../functionWrapper/types";
 import {createLogger} from "../../services/Logger/Logger.pino";
-import {userSchema} from "../../validation/user";
 import {NotFoundError} from "../../utils/Errors";
+import {userSchema} from "../../validation/user";
 
 const querySchema = z.object({
   id: z.string(),
@@ -18,7 +18,12 @@ const querySchema = z.object({
 
 const anySchema = z.any();
 
-const handler: HandlerFunction<typeof anySchema, typeof querySchema, typeof userSchema> = async ({query, headers}) => {
+const handler: HandlerFunction<
+    typeof anySchema,
+    typeof querySchema,
+    typeof userSchema,
+    false
+> = async ({query, headers}) => {
   const logger =createLogger({
     name: "fetchUserById",
     shouldLogToConsole: getConfig().env === "local",

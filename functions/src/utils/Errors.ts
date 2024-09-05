@@ -12,6 +12,18 @@ export class NotFoundError extends CustomError {
   }
 }
 
+export class ForbiddenError extends CustomError {
+  constructor(message: string) {
+    super(message, 403);
+  }
+}
+
+export class UnauthorizedError extends CustomError {
+  constructor(message: string = "Unauthorized") {
+    super(message, 401);
+  }
+}
+
 export function getResponseFromError(error: Error): { statusCode: number; response: Record<string, unknown> } {
   switch (error.constructor) {
   case NotFoundError:

@@ -14,3 +14,10 @@ export const userSchema = z.object({
 }).extend(withDates);
 
 export type User = z.infer<typeof userSchema>;
+
+export const userUpdateSchema = userSchema.pick({
+  sqlId: true,
+  username: true,
+});
+
+export type UserUpdate = z.infer<typeof userUpdateSchema>;

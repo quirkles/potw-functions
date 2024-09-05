@@ -7,6 +7,7 @@ import {TypeOf, z, ZodError, ZodSchema} from "zod";
 import {getConfig} from "../config";
 import {createLogger} from "../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../services/firebase";
+import {TokenBody, verifyToken} from "../services/jwt/jwt";
 import {getResponseFromError} from "../utils/Errors";
 import {flattenObject, isObject} from "../utils/object";
 
@@ -19,9 +20,10 @@ export function httpHandler<
     BodySchema extends ZodSchema | undefined,
     QuerySchema extends ZodSchema | undefined,
     ResponseSchema extends ZodSchema | undefined,
+    RequireAuthToken extends boolean,
 >(
-  func: HandlerFunction<BodySchema, QuerySchema, ResponseSchema>,
-  config?: HandlerFunctionConfig<BodySchema, QuerySchema, ResponseSchema>
+  func: HandlerFunction<BodySchema, QuerySchema, ResponseSchema, RequireAuthToken>,
+  config?: HandlerFunctionConfig<BodySchema, QuerySchema, ResponseSchema, RequireAuthToken>
 ): HttpsFunction {
   const {
     bodySchema = z.any().optional(),
@@ -133,6 +135,29 @@ export function httpHandler<
 
     let response: unknown | null = null;
     let statusCode: number = 200;
+
+    let tokenPayload: TokenBody | Record<string, string> = {};
+    if (config?.requireAuthToken) {
+      let token:string | undefined = headers["authorization"];
+      if (!token) {
+        logger.warn("JWT token is required but missing in request");
+        res.status(401).send("Unauthorized");
+        return;
+      }
+      token = token.replace("Bearer ", "");
+
+
+      try {
+        tokenPayload = verifyToken(token);
+      } catch (err) {
+        logger.warn("Error verifying JWT token", {
+          err,
+        });
+        res.status(401).send("Unauthorized");
+        return;
+      }
+    }
+
     try {
       logger.debug("Running handler");
       const result = await asyncLocalStorage.run({logger}, async () => {
@@ -140,6 +165,7 @@ export function httpHandler<
           body: validatedBody,
           query: validatedQuery,
           headers: headers as Record<string, string>,
+          tokenPayload: tokenPayload as TokenBody,
         });
       });
       if (hasResponse(result)) {
