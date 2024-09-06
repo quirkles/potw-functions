@@ -55,7 +55,7 @@ export const periodStringSchema = z.union([
 export type PeriodString = z.infer<typeof periodStringSchema>;
 
 export const gameSchema = z.object({
-  id: z.string(),
+  sqlId: z.string(),
   name: z.string(),
   description: z.string().nullable(),
   startDate: z.string(),
@@ -63,8 +63,8 @@ export const gameSchema = z.object({
   regularScheduledStartTimeUtc: z.string(),
   period: periodStringSchema,
   isPrivate: z.boolean(),
-  adminId: z.string(),
 })
   .extend(withDates);
 
 export type Game = z.infer<typeof gameSchema>;
+

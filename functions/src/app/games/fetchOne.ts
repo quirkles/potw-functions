@@ -135,8 +135,8 @@ function resultsToGames(results: {
   const users = Array.from(usersMap.values());
   const gameWeeks = Array.from(gameWeeksMap.values());
   return games.map((game) => {
-    const players = users.filter((user) => user.gameId === game.id);
-    const gameWeeksForGame = gameWeeks.filter((gameWeek) => gameWeek.gameId === game.id);
+    const players = users.filter((user) => user.gameId === game.sqlId);
+    const gameWeeksForGame = gameWeeks.filter((gameWeek) => gameWeek.gameId === game.sqlId);
     return {
       ...game,
       players,

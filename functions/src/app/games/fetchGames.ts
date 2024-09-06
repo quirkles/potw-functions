@@ -1,137 +1,45 @@
-import {eq} from "drizzle-orm";
-import {onRequest} from "firebase-functions/v2/https";
-import {v4} from "uuid";
+import {z} from "zod";
 
-import {getConfig} from "../../config";
-import {getDb} from "../../db/dbClient";
-import {SelectGame} from "../../db/schema/game";
-import {SelectUser, users} from "../../db/schema/user";
-import {createLogger} from "../../services/Logger/Logger.pino";
-import {Period} from "../../validation/game";
-import {ReturnUser, selectUserToReturnUser} from "../users/transform";
+import {getLogger} from "../../functionWrapper";
+import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
+import {fetchManyGames} from "../../services/games/fetchManyGames";
+import {fetchGamesForUser} from "../../services/users/fetchGamesForUser";
+import {Game} from "../../validation/game";
+import {gameWithRelationsSchema} from "../../validation/withRelations";
 
-import {periodStringToPeriod} from "./transforms";
+export const fetchGames = httpHandler(async ({
+  query,
+}) => {
+  const logger = getLogger();
+  logger.info("fetchGames begin", {query});
 
-type FetchGamesResponse = Omit<SelectGame, "players" | "period" |"admin"> & {
-    sqlId: string;
-    players: ReturnUser[];
-    period: Period;
-    admin: ReturnUser;
-}
+  const userId = query.userId;
 
-export const fetchGames = onRequest(async (req, res) => {
-  const logger = createLogger({
-    logName: "fetchGames",
-    shouldLogToConsole: getConfig().env === "local",
-    labels: {
-      functionExecutionId: v4(),
-      correlationId: req.headers["x-correlation-id"] as string || v4(),
-    },
-  });
+  let games: Game[];
 
-  logger.info("fetchGames begin", {query: req.query});
-
-  const userId = req.query.userId;
-
-  if (!userId) {
-    logger.warning("userId is required");
-    res.status(400).send("userId is required");
-    return;
+  if (userId) {
+    games = await fetchGamesForUser(userId as string);
+    return {
+      response: {
+        games,
+      },
+    };
   }
 
-  const db = getDb();
-  const [withGames] = await Promise.all([db.query.users.findFirst({
-    where: eq(users.id, String(userId)),
-    with: {
-      gamesAsParticipant: {
-        with: {
-          game: {
-            with: {
-              players: {
-                with: {
-                  user: true,
-                },
-              },
-              admin: true,
-            },
-          },
-        },
-      },
-      gamesAsAdmin: {
-        with: {
-          players: {
-            with: {
-              user: true,
-            },
-          },
-          admin: true,
-        },
-      },
+  games = await fetchManyGames({
+    limit: 20,
+  });
+
+  return {
+    response: {
+      games,
     },
-  })]);
-
-  if (!withGames) {
-    logger.warning("fetchGames: User not found in db", {
-      userId,
-    });
-    res.status(404).send("User not found");
-    return;
-  }
-
-  logger.debug("fetchGames: games as participant", {
-    games: withGames.gamesAsParticipant,
-  });
-  logger.debug("fetchGames: games as admin", {
-    games: withGames.gamesAsAdmin,
-  });
-
-  const allGames = (
-    withGames.gamesAsParticipant
-      .map(
-        (p): FetchGamesResponse => ({
-          ...p.game,
-          sqlId: p.game.id,
-          players: p.game.players.map((player) => ({
-            sqlId: player.user.id,
-            ...player.user,
-          })),
-          period: periodStringToPeriod(p.game.period),
-          admin: selectUserToReturnUser(p.game.admin as SelectUser),
-        })
-      )
-      .concat(withGames.gamesAsAdmin.map(
-        (g): FetchGamesResponse => ({
-          ...g,
-          sqlId: g.id,
-          players: g.players.map((player) => ({
-            sqlId: player.user.id,
-            ...player.user,
-          })),
-          period: periodStringToPeriod(g.period),
-          admin: selectUserToReturnUser(g.admin as SelectUser),
-        }))
-      )
-  ).reduce((acc, game) => {
-    if (!game) {
-      return acc;
-    }
-    if (acc[game.id]) {
-      return acc;
-    } else {
-      acc[game.id] = game;
-    }
-    return acc;
-  }, {} as Record<string, FetchGamesResponse>);
-
-  logger.info("fetchGames success", {
-    games: Object.values(allGames)
-      .map((g) => ({
-        id: g.sqlId,
-        name: g.name,
-      })),
-  });
-
-  res.status(201).send({
-    games: Object.values(allGames),
-  });
+  };
+}, {
+  querySchema: z.object({
+    userId: z.string().optional(),
+  }),
+  responseSchema: z.object({
+    games: z.array(gameWithRelationsSchema),
+  }),
 });
