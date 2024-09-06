@@ -17,7 +17,7 @@ export const pick = pgTable("pick", {
   ...withDates,
 });
 
-export const pickRelations = relations(pick, ({one, many}) => ({
+export const pickRelations = relations(pick, ({one}) => ({
   gameWeek: one(gameWeeks, {
     fields: [pick.gameWeekId],
     references: [gameWeeks.id],

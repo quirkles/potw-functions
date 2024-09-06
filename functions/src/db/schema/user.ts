@@ -11,6 +11,8 @@ export const users = pgTable("users", {
   username: varchar("username"),
   email: varchar("email").unique().notNull(),
   firestoreId: varchar("firestore_id").unique().notNull(),
+  aboutMe: varchar("about_me").default(sql`NULL`),
+  avatarUrl: varchar("avatar_url").default(sql`NULL`),
   ...withDates,
 });
 

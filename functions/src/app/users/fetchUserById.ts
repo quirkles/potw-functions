@@ -89,6 +89,8 @@ const handler: HandlerFunction<
       updatedAt: userResult.updatedAt,
       gamesAsParticipant,
       gamesAsAdmin: userResult.gamesAsAdmin,
+      aboutMe: userResult.aboutMe,
+      avatarUrl: userResult.avatarUrl,
     },
   };
 };
