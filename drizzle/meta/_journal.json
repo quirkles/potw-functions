@@ -120,6 +120,20 @@
       "when": 1725317758570,
       "tag": "0016_fat_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1725572316361,
+      "tag": "0017_hot_talkback",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1725577819845,
+      "tag": "0018_tiresome_blade",
+      "breakpoints": true
     }
   ]
 }
