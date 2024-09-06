@@ -75,6 +75,8 @@ export const createGame = httpHandler(async ({
       username = null,
       createdAt,
       updatedAt,
+      aboutMe,
+      avatarUrl,
     } = adminResults[0];
     invitedUsers = await inviteUsers(usersToInvite, email);
     existingUsers = existingUserIds.length ? await tx.select().from(users).where(inArray(
@@ -96,6 +98,8 @@ export const createGame = httpHandler(async ({
       username: username || email,
       createdAt,
       updatedAt,
+      aboutMe,
+      avatarUrl,
     };
     logger.info("createGame: admin found", {
       admin,
