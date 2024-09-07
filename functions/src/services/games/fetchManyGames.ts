@@ -1,5 +1,8 @@
+import {eq, isNotNull} from "drizzle-orm";
+
 import {selectUserToReturnUser} from "../../app/users/transform";
 import {getDb} from "../../db/dbClient";
+import {games} from "../../db/schema/game";
 import {SelectUser} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {GameWithRelations} from "../../validation/withRelations";
@@ -7,13 +10,16 @@ import {GameWithRelations} from "../../validation/withRelations";
 
 export async function fetchManyGames({
   limit,
+  includePrivate,
 }: {
     limit: number;
+    includePrivate: boolean;
 }): Promise<GameWithRelations[]> {
   const db = getDb();
   const logger = getLogger();
 
   const [withGames] = await Promise.all([db.query.games.findMany({
+    where: includePrivate ? isNotNull(games.isPrivate) : eq(games.isPrivate, false),
     with: {
       players: {
         with: {
@@ -23,8 +29,7 @@ export async function fetchManyGames({
       admin: true,
     },
     limit,
-  },
-  )]);
+  })]);
 
   logger.debug("fetchGames: games as participant", {
     games: withGames,

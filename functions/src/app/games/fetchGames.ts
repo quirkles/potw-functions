@@ -28,6 +28,7 @@ export const fetchGames = httpHandler(async ({
 
   games = await fetchManyGames({
     limit: 20,
+    includePrivate: false,
   });
 
   return {

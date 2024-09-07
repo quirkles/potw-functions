@@ -11,6 +11,7 @@ import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {Game, gameSchema} from "../../validation/game";
 import {User, userSchema} from "../../validation/user";
+import {gameWithRelationsSchema} from "../../validation/withRelations";
 import {GameWeek, gameWeekSchema} from "../gameWeeks/schemas";
 
 import {periodStringToPeriod} from "./transforms";
@@ -72,7 +73,7 @@ export const fetchOne = httpHandler(async ({query}) => {
   querySchema: z.object({
     gameId: z.string(),
   }),
-  responseSchema: gameSchema,
+  responseSchema: gameWithRelationsSchema,
 });
 
 function resultsToGames(results: {
@@ -82,36 +83,65 @@ function resultsToGames(results: {
     admin: SelectUser | null
     game_weeks: SelectGameWeek | null
 }[]):Game[] {
+  const logger = getLogger();
+  logger.info("resultsToGames: begin", {
+    results: results || "none",
+  });
   const gamesMap = new Map<string, Game>();
   const usersMap = new Map<string, User & {gameId: string}>();
   const gameWeeksMap = new Map<string, GameWeek & {gameId: string}>();
+  let admin: User | null = null;
 
   for (const result of results) {
+    logger.info("resultsToGames: processing result", {
+      result,
+    });
     if (result.games && result.admin) {
+      admin = userSchema.parse({
+        sqlId: result.admin.id,
+        ...result.admin,
+      });
       const existingGame = gamesMap.get(result.games.id);
       if (!existingGame) {
-        gamesMap.set(result.games.id, gameSchema.parse({
+        const gameData = {
           ...result.games,
+          sqlId: result.games.id,
           period: periodStringToPeriod(result.games.period),
-          gameWeeks: [],
-          admin: {
-            sqlId: result.admin.id,
-            ...result.admin,
-          },
-          players: [],
-        }));
+        };
+        const parsedGameResult = gameSchema.safeParse(gameData);
+        if (!parsedGameResult.success) {
+          logger.error("resultsToGames: failed to parse game", {
+            gameData,
+            err: parsedGameResult.error,
+          });
+          continue;
+        }
+        gamesMap.set(result.games.id, parsedGameResult.data);
       }
       if (result.users) {
         const existingUser = usersMap.get(result.users.id);
         if (!existingUser) {
+          const userData = {
+            email: result.users.email,
+            firestoreId: result.users.id,
+            sqlId: result.users.id,
+            username: result.users.username || null,
+            aboutMe: result.users.aboutMe || null,
+            avatarUrl: result.users.avatarUrl || null,
+            createdAt: result.users.createdAt,
+            updatedAt: result.users.updatedAt || null,
+          };
+          const parsedUserResult = userSchema.safeParse(userData);
+          if (!parsedUserResult.success) {
+            logger.error("resultsToGames: failed to parse user", {
+              userData,
+              err: parsedUserResult.error,
+            });
+            continue;
+          }
           usersMap.set(result.users.id, {
             gameId: result.games.id,
-            ...userSchema.parse({
-              email: result.users.email,
-              firestoreId: result.users.id,
-              sqlId: result.users.id,
-              username: result.users.username || null,
-            }),
+            ...parsedUserResult.data,
           });
         }
       }
@@ -137,10 +167,11 @@ function resultsToGames(results: {
   return games.map((game) => {
     const players = users.filter((user) => user.gameId === game.sqlId);
     const gameWeeksForGame = gameWeeks.filter((gameWeek) => gameWeek.gameId === game.sqlId);
-    return {
+    return gameWithRelationsSchema.parse({
       ...game,
       players,
       gameWeeks: gameWeeksForGame,
-    };
+      admin,
+    });
   });
 }
