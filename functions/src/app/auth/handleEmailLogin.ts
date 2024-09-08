@@ -1,27 +1,25 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
-import {onRequest} from "firebase-functions/v2/https";
 import {v4} from "uuid";
 
 import {getConfig} from "../../config";
+import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {createLogger} from "../../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../../services/firebase";
 import {createOtp, saveOrGetId} from "../../services/firestore/user";
+import {BadRequestError} from "../../utils/Errors";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sg = require("@sendgrid/mail");
 
-export const handleEmailLogin = onRequest({
-  cors: true,
-}, async (req, resp) => {
-  const {
-    body,
-  } = req;
-
+export const handleEmailLogin = httpHandler(async ({
+  body,
+  headers,
+}) => {
   const logger = createLogger({
     name: "createUser",
     labels: {
       functionExecutionId: v4(),
-      correlationId: req.headers["x-correlation-id"] as string || v4(),
+      correlationId: headers["x-correlation-id"] as string || v4(),
     },
     shouldLogToConsole: getConfig().env === "local",
   });
@@ -35,8 +33,7 @@ export const handleEmailLogin = onRequest({
   const email = body.email;
   if (!email || !email.length) {
     logger.warning("handleEmailLogin: email is required");
-    resp.status(400).send("Email is required");
-    return;
+    throw new BadRequestError("Email is required");
   }
   const otpResponse = await saveOrGetId(email, true).then((id) => {
     return createOtp(id, email);
@@ -54,8 +51,7 @@ export const handleEmailLogin = onRequest({
   const apiKey = secretResponse.payload?.data?.toString();
   if (!apiKey) {
     logger.error("handleEmailLogin: No api key found");
-    resp.status(500).send("No sendgrid api key found");
-    return;
+    throw new Error("Failed to send email");
   }
   const msg = {
     to: email,
@@ -74,8 +70,9 @@ export const handleEmailLogin = onRequest({
       err,
     });
   }
-  resp.json({
-    codeVerifier,
-  });
-  return;
+  return {
+    response: {
+      codeVerifier,
+    },
+  };
 });

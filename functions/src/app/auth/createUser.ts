@@ -45,5 +45,6 @@ export const createUser = onMessagePublished("create-user", async (event) => {
   validated.username = validated.username || validated.email;
   const db = getDb();
   await db.insert(users).values(validated);
+
   logger.info("createUser: inserted", {validated});
 });

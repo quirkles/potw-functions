@@ -1,5 +1,7 @@
 import {randomBytes} from "crypto";
 
+import {auth} from "firebase-admin";
+import {getAuth} from "firebase-admin/auth";
 import {getFirestore} from "firebase-admin/firestore";
 
 import {getLogger} from "../../../functionWrapper";
@@ -31,16 +33,13 @@ export async function saveOrGetId(
   email: string,
   needsVerification = false
 ): Promise<string> {
-  const db = getFirestore();
-  const users = await db.collection("users").where("email", "==", email).get();
-  if (users.size === 0) {
-    // Create a new user
-    const newUser = db.collection("users").doc();
-    await newUser.set({email, verified: !needsVerification, createdAt: new Date(), updatedAt: new Date()});
-    return newUser.id;
-  } else {
-    return users.docs[0].id;
+  const existingUser = await getExistingUserByEmail(email);
+  if (!existingUser) {
+    return createNewUserAndAddToFirestore(email, needsVerification).then((newUser) => {
+      return newUser.uid;
+    });
   }
+  return existingUser.uid;
 }
 
 export async function inviteOrGetId(
@@ -52,25 +51,29 @@ export async function inviteOrGetId(
     email,
     invitor,
   });
-  const db = getFirestore();
-  const users = await db.collection("users").where("email", "==", email).get();
-  if (users.size === 0) {
-    // Create a new user and invite them
-    const newUser = db.collection("users").doc();
-    logger.info("inviteOrGetId: creating new user", {
-      newUser: newUser.id,
+  const existingUser = await getAuth().getUserByEmail(email);
+  if (existingUser.uid) {
+    logger.info("inviteOrGetId: existing user", {
+      email,
+      invitor,
+      existingUser,
     });
-    await Promise.all([
-      newUser.set({email, verified: false, createdAt: new Date(), updatedAt: new Date()}),
-      sendInviteToEmail(email, invitor).catch((error) => {
-        logger.error("Error sending invite email", {email, invitor, error});
-      }),
-    ]);
-    return newUser.id;
-  } else {
-    logger.info("inviteOrGetId: user already exists");
-    return users.docs[0].id;
+    return existingUser.uid;
   }
+  // Create a new user and invite them
+  logger.info("inviteOrGetId: creating new user");
+  return Promise.all([
+    createNewUserAndAddToFirestore(email, true),
+    sendInviteToEmail(email, invitor).catch((error) => {
+      logger.error("Error sending invite email", {email, invitor, error});
+    }),
+  ]).then(([user]) => {
+    logger.info("inviteOrGetId: new user created", {
+      user,
+      email,
+    });
+    return user.uid;
+  });
 }
 /**
  * Creates a one-time password (OTP) for the given email and invalidates any existing OTPs for the same email.
@@ -150,4 +153,36 @@ export async function setField(id: string, field: string, value: string): Promis
   const db = getFirestore();
   const user = db.collection("users").doc(id);
   await user.update({[field]: value});
+}
+
+async function createNewUserAndAddToFirestore(
+  email: string,
+  needsVerification:boolean = false
+): Promise<auth.UserRecord> {
+  const newUser = await getAuth().createUser({email});
+  await getFirestore()
+    .collection("users")
+    .doc(newUser.uid)
+    .set({
+      email,
+      verified: !needsVerification,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  return newUser;
+}
+
+async function getExistingUserByEmail(email:string): Promise<auth.UserRecord | null> {
+  return getAuth().getUserByEmail(email).catch((err) => {
+    const logger = getLogger();
+    if (err.errorInfo.code === "auth/user-not-found") {
+      return null;
+    }
+    logger.error({
+      message: "Error getting user by email",
+      email,
+      err,
+    });
+    throw err;
+  });
 }

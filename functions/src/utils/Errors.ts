@@ -24,11 +24,37 @@ export class UnauthorizedError extends CustomError {
   }
 }
 
+export class BadRequestError extends CustomError {
+  constructor(message: string) {
+    super(message, 400);
+  }
+}
+
+export class ServerError extends CustomError {
+  constructor(message: string) {
+    super(message, 500);
+  }
+}
+
 export function getResponseFromError(error: Error): { statusCode: number; response: Record<string, unknown> } {
   switch (error.constructor) {
   case NotFoundError:
     return {
       statusCode: 404,
+      response: {
+        message: error.message,
+      },
+    };
+  case BadRequestError:
+    return {
+      statusCode: 400,
+      response: {
+        message: error.message,
+      },
+    };
+  case ServerError:
+    return {
+      statusCode: 500,
       response: {
         message: error.message,
       },

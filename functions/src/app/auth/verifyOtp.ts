@@ -1,36 +1,39 @@
-import {onRequest} from "firebase-functions/v2/https";
 import {sign} from "jsonwebtoken";
 import {v4} from "uuid";
 
 import {getConfig} from "../../config";
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
+import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {createLogger} from "../../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../../services/firebase";
 import {saveOrGetId, setField, verifyOtp} from "../../services/firestore/user";
-export const verifyOtpFn = onRequest({cors: true}, async (req, resp) => {
+import {UnauthorizedError} from "../../utils/Errors";
+export const verifyOtpFn = httpHandler(async ({
+  body,
+  headers,
+}) => {
   initializeAppAdmin();
   const logger = createLogger({
     logName: "verifyOtpFn",
     shouldLogToConsole: getConfig().env === "local",
     labels: {
       functionExecutionId: v4(),
-      correlationId: req.headers["x-correlation-id"] as string || v4(),
+      correlationId: headers["x-correlation-id"] as string || v4(),
     },
   });
 
   logger.info("verifyOTPBegin", {
-    body: req.body,
+    body: body,
   });
 
-  const {otp, codeVerifier} = req.body;
+  const {otp, codeVerifier} = body;
   const result = await verifyOtp(otp, codeVerifier);
   if (result instanceof Error) {
     logger.warning("verifyOtp: Error", {
       err: result,
     });
-    resp.status(401).json({error: result.message});
-    return;
+    throw new UnauthorizedError("Invalid OTP");
   }
   logger.info("verifyOtp: Result", {
     result,
@@ -65,10 +68,13 @@ export const verifyOtpFn = onRequest({cors: true}, async (req, resp) => {
     email: result,
     firestoreId,
     sqlId,
-  }, "super-secret");
+  }, getConfig().jwtSecret);
   logger.info("verifyOtp: token", {
     token,
   });
-  resp.json({token});
-  return;
+  return {
+    response: {
+      token,
+    },
+  };
 });

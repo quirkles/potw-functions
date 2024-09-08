@@ -7,6 +7,7 @@ import {users} from "../../db/schema/user";
 import {createLogger} from "../../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../../services/firebase";
 import {saveOrGetId, setField} from "../../services/firestore/user";
+import {getConfig} from "../../config";
 
 export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
   initializeAppAdmin();
@@ -57,7 +58,7 @@ export const handleSpotifyLogin = onRequest({cors: true}, async (req, resp) => {
     email: data.email,
     firestoreId,
     sqlId,
-  }, "super-secret");
+  }, getConfig().jwtSecret);
 
   logger.info("handleSpotifyLogin: end", {token});
 
