@@ -22,6 +22,11 @@ export async function inviteUsers(emails: string[], invitor: string): Promise<Us
           return null;
         })
     )
-  ).then((usersOrNull) => usersOrNull.filter(isNotEmpty));
+  ).then((usersOrNull) => {
+    logger.info("inviteUsers: end", {
+      usersInvited: usersOrNull || [],
+    });
+    return usersOrNull.filter(isNotEmpty);
+  });
 }
 

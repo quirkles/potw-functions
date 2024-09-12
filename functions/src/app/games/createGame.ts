@@ -11,6 +11,7 @@ import {initializeAppAdmin} from "../../services/firebase";
 import {getIdFromSqlId} from "../../services/firestore/user";
 import {initializeGameWeeksForGame} from "../../services/games/intializeNextGameWeeks";
 import {inviteUsers} from "../../services/users/inviteUsers";
+import {ServerError} from "../../utils/Errors";
 import {gameSchema, PeriodString} from "../../validation/game";
 import {User, userSchema} from "../../validation/user";
 
@@ -46,6 +47,12 @@ export const createGame = httpHandler(async ({
     }
   }
 
+  logger.info("createGame: inserting game", {
+    body,
+    existingUserIds,
+    usersToInvite,
+  });
+
 
   await db.transaction(async (tx) => {
     const [inserted] = await tx.insert(games).values({
@@ -79,13 +86,23 @@ export const createGame = httpHandler(async ({
       avatarUrl,
     } = adminResults[0];
     invitedUsers = await inviteUsers(usersToInvite, email);
+    logger.info("createGame: looking for existing users", {
+      existingUserIds,
+    });
     existingUsers = existingUserIds.length ? await tx.select().from(users).where(inArray(
       users.firestoreId,
       existingUserIds,
     )).then((results) => results.map((result) => userSchema.parse({
       ...result,
       sqlId: result.id,
-    }))) : [];
+    }))).catch((err) => {
+      logger.error("createGame: Error fetching existing users", {
+        lookingFor: existingUserIds,
+        err,
+      });
+      throw new ServerError("Error fetching existing users");
+    }) : [];
+    logger.info("createGame: found existing users. Getting admin firestoreId", {existingUsers, adminSqlId: sqlId});
     const firestoreId = await getIdFromSqlId(sqlId);
     if (firestoreId === null) {
       logger.warning("createGame: admin not found in Firestore");
