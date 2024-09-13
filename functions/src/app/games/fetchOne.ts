@@ -10,11 +10,9 @@ import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {Game, gameSchema} from "../../validation/game";
+import {GameWeek, gameWeekSchema} from "../../validation/gameWeek";
 import {User, userSchema} from "../../validation/user";
 import {gameWithRelationsSchema} from "../../validation/withRelations";
-import {GameWeek, gameWeekSchema} from "../gameWeeks/schemas";
-
-import {periodStringToPeriod} from "./transforms";
 
 export const fetchOne = httpHandler(async ({query}) => {
   const logger = getLogger();
@@ -106,7 +104,7 @@ function resultsToGames(results: {
         const gameData = {
           ...result.games,
           sqlId: result.games.id,
-          period: periodStringToPeriod(result.games.period),
+          period: result.games.period,
         };
         const parsedGameResult = gameSchema.safeParse(gameData);
         if (!parsedGameResult.success) {

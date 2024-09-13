@@ -1,6 +1,7 @@
 import {z} from "zod";
 
 import {gameSchema} from "./game";
+import {gameWeekSchema} from "./gameWeek";
 import {userSchema} from "./user";
 
 const userWithRelationsSchema = userSchema.extend({
@@ -14,6 +15,7 @@ export type UserWithRelations = z.infer<typeof userWithRelationsSchema>;
 export const gameWithRelationsSchema = gameSchema.extend({
   admin: userSchema.optional(),
   players: z.array(userSchema).optional(),
+  gameWeeks: z.array(gameWeekSchema).optional(),
 });
 
 export type GameWithRelations = z.infer<typeof gameWithRelationsSchema>;
