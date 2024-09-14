@@ -3,7 +3,7 @@ import {z} from "zod";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {initializeGameWeeksForGame} from "../../services/games/intializeNextGameWeeks";
-import {GameWeek} from "../gameWeeks/schemas";
+import {GameWeek} from "../../validation/gameWeek";
 
 export const initializeGameWeeks = httpHandler(async function({body}): Promise<{response: GameWeek[]}> {
   const {gameId, weeksToCreate} = body;

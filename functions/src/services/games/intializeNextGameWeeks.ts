@@ -1,7 +1,6 @@
 import {eq} from "drizzle-orm";
 import {gte} from "drizzle-orm/sql/expressions/conditions";
 
-import {GameWeek} from "../../app/gameWeeks/schemas";
 import {periodStringToPeriod} from "../../app/games/transforms";
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
@@ -9,6 +8,7 @@ import {gameWeeks, SelectGameWeek} from "../../db/schema/gameWeek";
 import {getLogger} from "../../functionWrapper";
 import {NotFoundError} from "../../utils/Errors";
 import {calculateNextGameWeekStartDate} from "../../utils/dates";
+import {GameWeek} from "../../validation/gameWeek";
 
 export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: number): Promise<GameWeek[]> {
   const logger = getLogger();
