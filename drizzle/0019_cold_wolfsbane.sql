@@ -1,0 +1,1 @@
+ALTER TABLE "pick" RENAME TO "picks";

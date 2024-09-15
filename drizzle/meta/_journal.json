@@ -134,6 +134,13 @@
       "when": 1725577819845,
       "tag": "0018_tiresome_blade",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1726358194537,
+      "tag": "0019_cold_wolfsbane",
+      "breakpoints": true
     }
   ]
 }
