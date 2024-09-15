@@ -63,6 +63,7 @@ export async function fetchGamesForUser(userId: string): Promise<GameWithRelatio
         (p): GameWithRelations => ({
           ...p.game,
           sqlId: p.game.id,
+          adminSqlId: p.game.admin.id,
           players: p.game.players.map((player) => ({
             sqlId: player.user.id,
             ...player.user,
@@ -79,6 +80,7 @@ export async function fetchGamesForUser(userId: string): Promise<GameWithRelatio
             sqlId: player.user.id,
             ...player.user,
           })),
+          adminSqlId: g.admin.id,
           period: g.period,
           admin: selectUserToReturnUser(g.admin as SelectUser),
         }))

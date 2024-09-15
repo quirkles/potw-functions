@@ -1,7 +1,7 @@
 import {relations, sql} from "drizzle-orm";
 import {pgTable, uuid} from "drizzle-orm/pg-core";
 
-import {pick} from "./pick";
+import {picks} from "./picks";
 import {users} from "./user";
 
 export const vote = pgTable("vote", {
@@ -15,8 +15,8 @@ export const voteRelations = relations(vote, ({one}) => ({
     fields: [vote.userId],
     references: [users.id],
   }),
-  pick: one(pick, {
+  pick: one(picks, {
     fields: [vote.pickId],
-    references: [pick.id],
+    references: [picks.id],
   }),
 }));

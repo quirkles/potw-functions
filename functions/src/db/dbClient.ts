@@ -7,7 +7,7 @@ import {mask} from "../services/utils/string";
 import * as game from "./schema/game";
 import * as gameWeeks from "./schema/gameWeek";
 import * as gamesToUsers from "./schema/games_to_users";
-import * as pick from "./schema/pick";
+import * as pick from "./schema/picks";
 import * as users from "./schema/user";
 import * as vote from "./schema/vote";
 

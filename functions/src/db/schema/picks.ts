@@ -5,7 +5,7 @@ import {gameWeeks} from "./gameWeek";
 import {withDates} from "./shared/withDates";
 import {users} from "./user";
 
-export const pick = pgTable("pick", {
+export const picks = pgTable("picks", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   gameWeekId: uuid("game_week_id").notNull(),
   userId: uuid("user_id").notNull(),
@@ -17,13 +17,15 @@ export const pick = pgTable("pick", {
   ...withDates,
 });
 
-export const pickRelations = relations(pick, ({one}) => ({
+export type SelectPick = typeof picks.$inferSelect;
+
+export const pickRelations = relations(picks, ({one}) => ({
   gameWeek: one(gameWeeks, {
-    fields: [pick.gameWeekId],
+    fields: [picks.gameWeekId],
     references: [gameWeeks.id],
   }),
   user: one(users, {
-    fields: [pick.userId],
+    fields: [picks.userId],
     references: [users.id],
   }),
 }));

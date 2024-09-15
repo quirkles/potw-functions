@@ -5,12 +5,14 @@ const {
   auth,
   user,
   game,
+  gameWeeks,
 } = appFunctions;
 
 export const app = {
   auth,
   user,
   game,
+  gameWeeks,
 };
 
 const {

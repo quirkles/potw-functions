@@ -171,6 +171,7 @@ export const createGame = httpHandler(async ({
       gameWeeks,
       createdAt: newGameCreatedAt as string,
       updatedAt: newGameUpdatedAt as string,
+      adminSqlId: body.adminId,
       players: [
         ...existingUsers,
         ...invitedUsers,

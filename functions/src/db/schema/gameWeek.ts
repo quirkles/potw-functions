@@ -2,7 +2,7 @@ import {relations, sql} from "drizzle-orm";
 import {pgTable, uuid, varchar, timestamp} from "drizzle-orm/pg-core";
 
 import {games} from "./game";
-import {pick} from "./pick";
+import {picks} from "./picks";
 
 export const gameWeeks = pgTable("game_weeks", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -19,5 +19,5 @@ export const gameWeeksRelations = relations(gameWeeks, ({one, many}) => ({
     fields: [gameWeeks.gameId],
     references: [games.id],
   }),
-  picks: many(pick),
+  picks: many(picks),
 }));

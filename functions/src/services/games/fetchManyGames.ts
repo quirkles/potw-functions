@@ -46,6 +46,7 @@ export async function fetchManyGames({
         })),
         period: game.period,
         admin: selectUserToReturnUser(game.admin as SelectUser),
+        adminSqlId: game.admin.id,
       })
     )
   ).reduce((acc, game) => {

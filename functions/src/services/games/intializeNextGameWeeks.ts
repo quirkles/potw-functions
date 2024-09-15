@@ -93,9 +93,9 @@ export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: 
 
   return results.map((result) => ({
     sqlId: result.insertedId,
-    gameId: result.gameId,
     startDateTime: result.startDateTime,
     theme: null,
     meetingLink: null,
+    gameSqlId: gameId,
   }));
 }

@@ -63,6 +63,8 @@ export const gameSchema = z.object({
   regularScheduledStartTimeUtc: z.string(),
   period: periodStringSchema,
   isPrivate: z.boolean(),
+
+  adminSqlId: z.string(),
 })
   .extend(withDates);
 
