@@ -148,6 +148,27 @@
       "when": 1726963840263,
       "tag": "0020_mysterious_morlun",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1727034689940,
+      "tag": "0021_youthful_cyclops",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1727035058558,
+      "tag": "0022_wooden_gauntlet",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1727035553338,
+      "tag": "0023_overrated_cerise",
+      "breakpoints": true
     }
   ]
 }
