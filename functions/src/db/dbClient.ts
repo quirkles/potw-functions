@@ -9,7 +9,7 @@ import * as gameWeeks from "./schema/gameWeek";
 import * as gamesToUsers from "./schema/games_to_users";
 import * as pick from "./schema/picks";
 import * as users from "./schema/user";
-import * as vote from "./schema/vote";
+import * as vote from "./schema/votes";
 
 export const getDb = () => {
   const {sqlDatabase} = getConfig();

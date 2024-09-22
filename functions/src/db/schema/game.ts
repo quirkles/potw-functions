@@ -9,7 +9,7 @@ import {users} from "./user";
 
 export const games = pgTable("games", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  firestoreId: varchar("firestoreId").notNull().default("NOT_SET"),
+  firestoreId: varchar("firestore_id").notNull().default("NOT_SET"),
   name: varchar("name").notNull(),
   description: varchar("description"),
   startDate: date("startDate", {mode: "string"}).notNull(),

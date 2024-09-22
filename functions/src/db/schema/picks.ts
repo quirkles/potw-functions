@@ -7,6 +7,7 @@ import {users} from "./user";
 
 export const picks = pgTable("picks", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  firestoreId: varchar("firestore_id").notNull().default("NOT_SET"),
   gameWeekId: uuid("game_week_id").notNull(),
   userId: uuid("user_id").notNull(),
   spotifyTrackId: uuid("spotify_track_id"),
