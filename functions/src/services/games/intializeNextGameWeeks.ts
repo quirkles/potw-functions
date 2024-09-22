@@ -1,5 +1,6 @@
 import {eq} from "drizzle-orm";
 import {gte} from "drizzle-orm/sql/expressions/conditions";
+import {getFirestore} from "firebase-admin/firestore";
 
 import {periodStringToPeriod} from "../../app/games/transforms";
 import {getDb} from "../../db/dbClient";
@@ -68,8 +69,12 @@ export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: 
       },
       startDate
     );
+
+    const gameWeekRef = getFirestore().collection("gameWeeks").doc();
+
     toCreate.push({
       gameId,
+      firestoreId: gameWeekRef.id,
       startDateTime: startDate,
       theme: null,
       meetingLink: null,
@@ -83,12 +88,25 @@ export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: 
 
   const results = await db.insert(gameWeeks).values(toCreate).returning({
     insertedId: gameWeeks.id,
+    firestoreId: gameWeeks.firestoreId,
     gameId: gameWeeks.gameId,
     startDateTime: gameWeeks.startDateTime,
   }).execute();
 
+
   logger.info("initializeGameWeeksForGame: game weeks created", {
     results,
+  });
+
+  await getFirestore().runTransaction(async (tx) => {
+    for (const result of results) {
+      const gameWeekRef = getFirestore().collection("gameWeeks").doc(result.firestoreId);
+      tx.set(gameWeekRef, {
+        sqlId: result.insertedId,
+        gameSqlId: gameId,
+        gameFirestoreId: queryResult.firestoreId,
+      });
+    }
   });
 
   return results.map((result) => ({

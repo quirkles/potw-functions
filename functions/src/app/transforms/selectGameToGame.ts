@@ -4,6 +4,7 @@ import {Game} from "../../validation/game";
 export function selectGameToGame(game: SelectGame): Game {
   return {
     sqlId: game.id,
+    firestoreId: game.firestoreId,
     name: game.name,
     description: game.description,
     isPrivate: game.isPrivate,
