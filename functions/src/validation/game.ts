@@ -1,6 +1,7 @@
 import {z} from "zod";
 
 import {withDates} from "./shared";
+import {withIds} from "./withIds";
 
 export const periodSchema = z.union([
   z.literal("daily"),
@@ -55,7 +56,6 @@ export const periodStringSchema = z.union([
 export type PeriodString = z.infer<typeof periodStringSchema>;
 
 export const gameSchema = z.object({
-  sqlId: z.string(),
   name: z.string(),
   description: z.string().nullable(),
   startDate: z.string(),
@@ -66,7 +66,7 @@ export const gameSchema = z.object({
 
   adminSqlId: z.string(),
 })
-  .extend(withDates);
+  .extend(withDates).extend(withIds);
 
 export type Game = z.infer<typeof gameSchema>;
 

@@ -87,7 +87,7 @@ function resultsToGames(results: {
   });
   const gamesMap = new Map<string, Game>();
   const usersMap = new Map<string, User & {gameId: string}>();
-  const gameWeeksMap = new Map<string, GameWeek & {gameId: string}>();
+  const gameWeeksMap = new Map<string, GameWeek>();
   let admin: User | null = null;
 
   for (const result of results) {
@@ -103,6 +103,7 @@ function resultsToGames(results: {
       if (!existingGame) {
         const gameData = {
           ...result.games,
+          adminSqlId: result.admin.id,
           sqlId: result.games.id,
           period: result.games.period,
         };
@@ -146,15 +147,19 @@ function resultsToGames(results: {
       if (result.game_weeks) {
         const existingGameWeek = gameWeeksMap.get(result.game_weeks.id);
         if (!existingGameWeek) {
-          gameWeeksMap.set(result.game_weeks.id, {
-            gameId: result.games.id,
-            ...gameWeekSchema.parse({
-              sqlId: result.game_weeks.id,
-              startDateTime: result.game_weeks.startDateTime,
-              theme: result.game_weeks.theme || null,
-              meetingLink: result.game_weeks.meetingLink || null,
-            }),
+          const parsedGameWeekResult = gameWeekSchema.safeParse({
+            ...result.game_weeks,
+            sqlId: result.game_weeks.id,
+            gameSqlId: result.games.id,
           });
+          if (!parsedGameWeekResult.success) {
+            logger.error("resultsToGames: failed to parse game week", {
+              gameWeekData: result.game_weeks,
+              err: parsedGameWeekResult.error,
+            });
+            continue;
+          }
+          gameWeeksMap.set(result.game_weeks.id, parsedGameWeekResult.data);
         }
       }
     }
@@ -164,7 +169,7 @@ function resultsToGames(results: {
   const gameWeeks = Array.from(gameWeeksMap.values());
   return games.map((game) => {
     const players = users.filter((user) => user.gameId === game.sqlId);
-    const gameWeeksForGame = gameWeeks.filter((gameWeek) => gameWeek.gameId === game.sqlId);
+    const gameWeeksForGame = gameWeeks.filter((gameWeek) => gameWeek.gameSqlId === game.sqlId);
     return gameWithRelationsSchema.parse({
       ...game,
       players,

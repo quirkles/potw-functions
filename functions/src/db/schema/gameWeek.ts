@@ -6,6 +6,7 @@ import {picks} from "./picks";
 
 export const gameWeeks = pgTable("game_weeks", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  firestoreId: varchar("firestoreId").notNull().default("NOT_SET"),
   gameId: uuid("game_id").notNull(),
   startDateTime: timestamp("start_date_time").notNull(),
   theme: varchar("theme"),

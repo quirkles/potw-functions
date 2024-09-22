@@ -1,29 +1,22 @@
 import {faker} from "@faker-js/faker";
-import {getFirestore} from "firebase-admin/firestore";
 
 import {users} from "../schema/user";
 
+import {firestore} from "./firestore";
 import {getDb} from "./getDb";
 
 interface ISeedUsersProps {
     count?: number,
 }
 
-let firestore: FirebaseFirestore.Firestore;
-
-function initFirestore() {
-  firestore = getFirestore();
-}
-
-const ensureEmailsIncluded = [
-  "al.quirk@gmail.com",
+const ensureEmailsIncluded: string[] = [
+  // "al.quirk@gmail.com",
 ];
 
 export async function seedUsers({
   count = 100,
 }: ISeedUsersProps) {
   const results = [];
-  initFirestore();
   let scriptTimedOut = false;
   const timeout = setTimeout(() => {
     scriptTimedOut = true;

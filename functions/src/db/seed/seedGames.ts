@@ -8,6 +8,7 @@ import {allPeriodStrings} from "../../validation/game";
 import {games} from "../schema/game";
 import {gamesToUsers} from "../schema/games_to_users";
 
+import {firestore} from "./firestore";
 import {getDb} from "./getDb";
 
 interface ISeedGamesProps {
@@ -33,13 +34,20 @@ export async function seedGames({
       continue;
     }
     const playerIds = shuffledUserIds.slice(0, getRandomIntegerInRange(4, Math.min(shuffledUserIds.length, 10)));
+    const newGameRef = firestore.collection("games").doc();
     const sqlId = await createGame({
       playerIds,
-      adminId,
+      adminId: adminId,
+      firestoreId: newGameRef.id,
     });
     if (!sqlId) {
       continue;
     }
+
+    await newGameRef.set({
+      sqlId,
+    });
+
     remaining--;
   }
   clearTimeout(timeout);
@@ -48,8 +56,10 @@ export async function seedGames({
 async function createGame({
   adminId,
   playerIds,
+  firestoreId,
 }: {
   adminId: string,
+  firestoreId: string,
   playerIds: string[],
 }): Promise<null | string> {
   const includeAdmin = getTrueFalse(0.8);
@@ -65,6 +75,7 @@ async function createGame({
       description: getTrueFalse(0.2) ? faker.lorem.sentence() : null,
       isPrivate: getTrueFalse(0.4),
       adminId,
+      firestoreId,
       startDate: startDate.toISOString().slice(0, 10),
       endDate: endDate ? endDate.toISOString().slice(0, 10) : null,
       period: getRandomElement(

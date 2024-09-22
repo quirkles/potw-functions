@@ -40,6 +40,7 @@ export async function fetchManyGames({
       (game): GameWithRelations => ({
         ...game,
         sqlId: game.id,
+        firestoreId: game.firestoreId,
         players: game.players.map((player) => ({
           sqlId: player.user.id,
           ...player.user,

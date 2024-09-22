@@ -1,5 +1,6 @@
 import {eq} from "drizzle-orm";
 import {inArray} from "drizzle-orm/sql/expressions/conditions";
+import {getFirestore} from "firebase-admin/firestore";
 
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
@@ -53,10 +54,12 @@ export const createGame = httpHandler(async ({
     usersToInvite,
   });
 
+  const newGameRef = getFirestore().collection("games").doc();
 
   await db.transaction(async (tx) => {
     const [inserted] = await tx.insert(games).values({
       name: body.name,
+      firestoreId: newGameRef.id,
       description: body.description,
       isPrivate: body.isPrivate,
       adminId: body.adminId,
@@ -70,6 +73,9 @@ export const createGame = httpHandler(async ({
     });
     logger.info("createGame: game inserted", {
       inserted,
+    });
+    await newGameRef.set({
+      sqlId: inserted.insertedId,
     });
     const adminResults = await tx.select().from(users).where(eq(users.id, body.adminId)).limit(1);
     if (adminResults.length === 0) {
@@ -165,6 +171,7 @@ export const createGame = httpHandler(async ({
     response: {
       ...body,
       sqlId: newGameId,
+      firestoreId: newGameRef.id,
       period: periodString,
       id: newGameId,
       admin,

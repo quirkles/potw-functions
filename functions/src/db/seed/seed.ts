@@ -1,14 +1,12 @@
 import * as path from "node:path";
 
 import {configDotenv} from "dotenv";
-import * as admin from "firebase-admin";
 
 import {seedGames} from "./seedGames";
 import {seedUsers} from "./seedUsers";
 
 async function main() {
-  admin.initializeApp();
-  const [env = "local", count = "1000"] = process.argv.slice(2);
+  const [env = "local", count = "100"] = process.argv.slice(2);
 
   const seedCount = parseInt(count, 10);
 
