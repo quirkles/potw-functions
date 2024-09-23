@@ -82,7 +82,7 @@ async function createSqlUser({
   const [inserted] = await db.insert(users).values({
     email,
     firestoreId,
-    username: email,
+    username: email.split("@")[0],
   }).returning({
     insertedId: users.id,
   }).onConflictDoUpdate({
