@@ -169,6 +169,27 @@
       "when": 1727035553338,
       "tag": "0023_overrated_cerise",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1727140325915,
+      "tag": "0024_wooden_mole_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1727142122623,
+      "tag": "0025_superb_mentallo",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1727550294002,
+      "tag": "0026_blue_zuras",
+      "breakpoints": true
     }
   ]
 }

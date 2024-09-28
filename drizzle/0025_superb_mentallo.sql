@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "game_weeks_start_date_time_index" ON "game_weeks" ("start_date_time");
