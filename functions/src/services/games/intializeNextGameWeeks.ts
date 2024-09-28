@@ -2,7 +2,6 @@ import {eq} from "drizzle-orm";
 import {gte} from "drizzle-orm/sql/expressions/conditions";
 import {getFirestore} from "firebase-admin/firestore";
 
-import {periodStringToPeriod} from "../../app/games/transforms";
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
 import {gameWeeks, SelectGameWeek} from "../../db/schema/gameWeek";
@@ -64,7 +63,7 @@ export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: 
     startDate = calculateNextGameWeekStartDate(
       {
         startDate: queryResult.startDate,
-        period: periodStringToPeriod(queryResult.period),
+        period: queryResult.period,
         regularScheduledStartTimeUtc: queryResult.regularScheduledStartTimeUtc,
       },
       startDate
@@ -74,6 +73,7 @@ export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: 
 
     toCreate.push({
       gameId,
+      status: "pending",
       firestoreId: gameWeekRef.id,
       startDateTime: startDate,
       theme: null,

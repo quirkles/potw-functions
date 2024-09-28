@@ -11,7 +11,8 @@ import {add} from "date-fns/add";
 import {z} from "zod";
 
 import {getLogger} from "../functionWrapper";
-import {Period} from "../validation/game";
+import {Period, PeriodString} from "../validation/game";
+import {periodStringToPeriod} from "../app/games/transforms";
 
 export const timeStringRegex = /^([01][0-9]|2[0123]):[0-5][0-9]:00$/;
 export const timeStringSchema = z.string().regex(timeStringRegex);
@@ -94,7 +95,7 @@ export function stringAsDateString(dateStr?: string | null): DateString | null {
 export const calculateNextGameWeekStartDate = (
   game: {
       startDate: string;
-      period: Period;
+      period: PeriodString;
       regularScheduledStartTimeUtc: TimeString;
     },
   latestGameWeekStartDate: Date | null,
@@ -131,7 +132,7 @@ export const calculateNextGameWeekStartDate = (
   });
 
   while (gameStartDate <= (latestGameWeekStartDate || new Date())) {
-    gameStartDate = incrementDateToNextPeriod(gameStartDate, period);
+    gameStartDate = incrementDateToNextPeriod(gameStartDate, periodStringToPeriod(period));
   }
   return gameStartDate;
 };

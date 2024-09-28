@@ -6,7 +6,7 @@ import {getTrueFalse} from "../../utils/logic";
 import {getRandomIntegerInRange} from "../../utils/number";
 import {allPeriodStrings} from "../../validation/game";
 import {games} from "../schema/game";
-import {gamesToUsers} from "../schema/games_to_users";
+import {gamesToUsers} from "../schema/gamesToUsers";
 
 import {firestore} from "./firestore";
 import {getDb} from "./getDb";

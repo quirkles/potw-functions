@@ -4,7 +4,7 @@ import {getFirestore} from "firebase-admin/firestore";
 
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
-import {gamesToUsers} from "../../db/schema/games_to_users";
+import {gamesToUsers} from "../../db/schema/gamesToUsers";
 import {users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
@@ -70,12 +70,15 @@ export const createGame = httpHandler(async ({
       insertedId: games.id,
       createdAt: games.createdAt,
       updatedAt: games.updatedAt,
+      status: games.status,
     });
     logger.info("createGame: game inserted", {
       inserted,
     });
     await newGameRef.set({
       sqlId: inserted.insertedId,
+      startDate: new Date(body.startDate),
+      status: inserted.status,
     });
     const adminResults = await tx.select().from(users).where(eq(users.id, body.adminId)).limit(1);
     if (adminResults.length === 0) {

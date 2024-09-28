@@ -1,22 +1,25 @@
+import {HttpsOptions} from "firebase-functions/v2/https";
+import {PubSubOptions} from "firebase-functions/v2/pubsub";
 import {TypeOf, ZodSchema} from "zod";
 
 import type {Maybe, OrPromise} from "../typeUtils";
 
-export type HandlerFunctionConfig<
+export type HttpHandlerFunctionConfig<
     BodySchema extends ZodSchema | undefined,
     QuerySchema extends ZodSchema | undefined,
     ResponseSchema extends ZodSchema | undefined,
     RequireAuthToken extends boolean,
-> = {
+> = HttpsOptions & {
     bodySchema?: BodySchema,
     querySchema?: QuerySchema,
     responseSchema?: ResponseSchema,
     loggerName?: string,
     useAppCheck?: boolean,
     requireAuthToken?: RequireAuthToken,
+    functionName?: string,
 };
 
-export type HandlerFunction<
+export type HttpHandlerFunction<
     BodySchema extends ZodSchema | undefined,
     QuerySchema extends ZodSchema | undefined,
     ResponseSchema extends ZodSchema | undefined,
@@ -42,6 +45,23 @@ export type HandlerFunction<
         statusCode?: number,
     }>
 >;
+
+export type PubSubHandlerFunctionConfig<
+    BodySchema extends ZodSchema | undefined,
+> = PubSubOptions & {
+    bodySchema?: BodySchema,
+    loggerName?: string,
+    useAppCheck?: boolean,
+    functionName?: string,
+}
+
+export type PubSubHandlerFunction<
+    BodySchema extends ZodSchema | undefined,
+> = (
+    payload: {
+        body: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown,
+    },
+) => unknown | Promise<unknown>;
 
 type OKStatusCodes = 200 | 201 | 204;
 type ErrorStatusCodes =

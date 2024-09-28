@@ -11,7 +11,7 @@ import {TokenBody, verifyToken} from "../services/jwt/jwt";
 import {getResponseFromError} from "../utils/Errors";
 import {flattenObject, isObject} from "../utils/object";
 
-import {HandlerFunction, HandlerFunctionConfig} from "./types";
+import {HttpHandlerFunction, HttpHandlerFunctionConfig} from "./types";
 
 import {asyncLocalStorage, functionInstanceId} from "./index";
 
@@ -22,14 +22,15 @@ export function httpHandler<
     ResponseSchema extends ZodSchema | undefined,
     RequireAuthToken extends boolean,
 >(
-  func: HandlerFunction<BodySchema, QuerySchema, ResponseSchema, RequireAuthToken>,
-  config?: HandlerFunctionConfig<BodySchema, QuerySchema, ResponseSchema, RequireAuthToken>
+  func: HttpHandlerFunction<BodySchema, QuerySchema, ResponseSchema, RequireAuthToken>,
+  config?: HttpHandlerFunctionConfig<BodySchema, QuerySchema, ResponseSchema, RequireAuthToken>
 ): HttpsFunction {
   const {
     bodySchema = z.any().optional(),
     querySchema = z.any().optional(),
     responseSchema = z.any().optional(),
     useAppCheck = false,
+    functionName,
   } = config || {};
   return onRequest(async (req, res) => {
     const logLabels: Record<string, string> = {
@@ -46,7 +47,7 @@ export function httpHandler<
     const correlationId = String(headers["x-correlation-id"] || v4());
 
     const logger = createLogger({
-      logName: "httpHandler",
+      logName: `httpHandler:${functionName || func.name || "unknownFunction"}`,
       shouldLogToConsole: getConfig().env === "local",
       labels: {
         ...logLabels,

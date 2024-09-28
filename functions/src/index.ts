@@ -1,6 +1,7 @@
 import * as appFunctions from "./app/functions";
 import * as testFunctions from "./test/functions";
 
+
 const {
   auth,
   user,
@@ -8,11 +9,22 @@ const {
   gameWeeks,
 } = appFunctions;
 
+const {
+  initiateDailyGameUpdateHttp,
+  ...appGameFunctions
+} = game;
+
 export const app = {
   auth,
   user,
-  game,
+  game: appGameFunctions,
   gameWeeks,
+};
+
+export const dev = {
+  game: {
+    initiateDailyGameUpdateHttp,
+  },
 };
 
 const {

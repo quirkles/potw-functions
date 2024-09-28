@@ -1,10 +1,12 @@
 import {relations, sql} from "drizzle-orm";
-import {pgTable, uuid, varchar, boolean, date, time} from "drizzle-orm/pg-core";
+import {pgTable, uuid, varchar, boolean, date, time, pgEnum} from "drizzle-orm/pg-core";
 
 import {gameWeeks} from "./gameWeek";
-import {gamesToUsers} from "./games_to_users";
+import {gamesToUsers} from "./gamesToUsers";
 import {withDates} from "./shared/withDates";
 import {users} from "./user";
+
+export const statusEnum = pgEnum("game_status", ["pending", "active", "inactive"]);
 
 
 export const games = pgTable("games", {
@@ -20,6 +22,7 @@ export const games = pgTable("games", {
   period: varchar("period").notNull(),
   isPrivate: boolean("isPrivate").notNull().default(false),
   adminId: uuid("adminId").references(() => users.id).notNull(),
+  status: statusEnum("status").notNull().default("pending"),
   ...withDates,
 });
 

@@ -2,7 +2,7 @@ import {relations, sql} from "drizzle-orm";
 import {pgTable, uuid, varchar} from "drizzle-orm/pg-core";
 
 import {games} from "./game";
-import {gamesToUsers} from "./games_to_users";
+import {gamesToUsers} from "./gamesToUsers";
 import {withDates} from "./shared/withDates";
 
 

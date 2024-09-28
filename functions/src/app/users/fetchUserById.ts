@@ -6,7 +6,7 @@ import {getConfig} from "../../config";
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
-import {HandlerFunction} from "../../functionWrapper/types";
+import {HttpHandlerFunction} from "../../functionWrapper/types";
 import {createLogger} from "../../services/Logger/Logger.pino";
 import {NotFoundError} from "../../utils/Errors";
 import {userSchema} from "../../validation/user";
@@ -18,7 +18,7 @@ const querySchema = z.object({
 
 const anySchema = z.any();
 
-const handler: HandlerFunction<
+const handler: HttpHandlerFunction<
     typeof anySchema,
     typeof querySchema,
     typeof userSchema,

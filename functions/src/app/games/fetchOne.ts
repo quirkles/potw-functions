@@ -5,7 +5,7 @@ import {z} from "zod";
 import {getDb} from "../../db/dbClient";
 import {games, SelectGame} from "../../db/schema/game";
 import {gameWeeks, SelectGameWeek} from "../../db/schema/gameWeek";
-import {gamesToUsers} from "../../db/schema/games_to_users";
+import {gamesToUsers} from "../../db/schema/gamesToUsers";
 import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
