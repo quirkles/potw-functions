@@ -36,7 +36,7 @@ export const payloadCreators = {
     topic: TopicNames.DAILY_GAME_UPDATE,
   }),
 } satisfies {
-    [key in ACTIONS]: (payload: any) => {
+    [key in ACTIONS]: (...args: never[]) => {
       action: key;
       topic: TopicNames
     } & Record<string, string | number>;

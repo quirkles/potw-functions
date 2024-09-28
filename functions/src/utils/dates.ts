@@ -10,9 +10,9 @@ import {
 import {add} from "date-fns/add";
 import {z} from "zod";
 
+import {periodStringToPeriod} from "../app/games/transforms";
 import {getLogger} from "../functionWrapper";
 import {Period, PeriodString} from "../validation/game";
-import {periodStringToPeriod} from "../app/games/transforms";
 
 export const timeStringRegex = /^([01][0-9]|2[0123]):[0-5][0-9]:00$/;
 export const timeStringSchema = z.string().regex(timeStringRegex);
