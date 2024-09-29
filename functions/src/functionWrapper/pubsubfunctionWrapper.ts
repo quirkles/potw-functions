@@ -1,6 +1,5 @@
 import {CloudEvent} from "firebase-functions/lib/v2/core";
-import {MessagePublishedData} from "firebase-functions/lib/v2/providers/pubsub";
-import {onMessagePublished} from "firebase-functions/v2/pubsub";
+import {onMessagePublished, MessagePublishedData} from "firebase-functions/v2/pubsub";
 import {v4} from "uuid";
 import {TypeOf, z, ZodError, ZodSchema} from "zod";
 
