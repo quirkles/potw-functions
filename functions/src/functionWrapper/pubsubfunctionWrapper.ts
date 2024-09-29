@@ -75,9 +75,7 @@ export function pubsubHandler<
     try {
       logger.debug("Running handler");
       const result = await asyncLocalStorage.run({logger}, async () => {
-        return func({
-          body: validatedBody,
-        });
+        return func(validatedBody);
       });
       logger.debug("Handler completed", {
         result,

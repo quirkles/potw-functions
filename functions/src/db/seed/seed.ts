@@ -2,21 +2,14 @@ import * as path from "node:path";
 
 import {configDotenv} from "dotenv";
 
+import {documentsToPreserve} from "./config";
 import {seedGames} from "./seedGames";
 import {seedUsers} from "./seedUsers";
 
+const USERS_COUNT = 100;
+
 async function main() {
-  const [env = "local", count = "100"] = process.argv.slice(2);
-
-  const seedCount = parseInt(count, 10);
-
-  if (isNaN(seedCount)) {
-    throw new Error(`Invalid count: ${count}`);
-  }
-
-  if (env !== "local" && env !== "dev") {
-    throw new Error(`Invalid env: ${env}`);
-  }
+  const [env = "local"] = process.argv.slice(2);
 
   const configPath = path.join(__dirname, "../../../", `.env.${env}`);
 
@@ -26,20 +19,18 @@ async function main() {
     path: configPath,
   });
 
-  const users = await seedUsers({
-    count: seedCount,
+  const userSqlIds = await seedUsers({
+    count: USERS_COUNT,
   });
 
   console.log("Users seeded.");
-  console.log(JSON.stringify(users, null, 2));
 
-  const games = await seedGames({
-    count: seedCount,
-    userIds: users.map((user) => user.sqlId) as [string, ...string[]],
+  await seedGames({
+    userIds: userSqlIds as [string, ...string[]],
+    ensureIncludedUserIds: documentsToPreserve.postgres.users as [string, ...string[]],
   });
 
   console.log("Games seeded.");
-  console.log(JSON.stringify(games, null, 2));
 }
 
 main()

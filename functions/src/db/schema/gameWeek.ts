@@ -7,17 +7,24 @@ import {picks} from "./picks";
 export const statusEnum = pgEnum("game_week_status", ["pending", "current", "overdue", "complete"]);
 
 
-export const gameWeeks = pgTable("game_weeks", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  firestoreId: varchar("firestore_id").notNull().default("NOT_SET"),
-  gameId: uuid("game_id").notNull(),
-  startDateTime: timestamp("start_date_time").notNull(),
-  theme: varchar("theme"),
-  meetingLink: varchar("meeting_link"),
-  status: statusEnum("status").notNull().default("pending"),
-}, ({startDateTime}) => ({
-  startDateTimeIndex: index("game_weeks_start_date_time_index").on(startDateTime).asc(),
-})
+export const gameWeeks = pgTable(
+  "game_weeks",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    firestoreId: varchar("firestore_id").notNull().default("NOT_SET"),
+
+    gameId: uuid("game_id").references(() => games.id, {
+      onDelete: "cascade",
+    }).notNull(),
+
+    startDateTime: timestamp("start_date_time").notNull(),
+    theme: varchar("theme"),
+    meetingLink: varchar("meeting_link"),
+    status: statusEnum("status").notNull().default("pending"),
+  },
+  ({startDateTime}) => ({
+    startDateTimeIndex: index("game_weeks_start_date_time_index").on(startDateTime).asc(),
+  })
 );
 
 export type SelectGameWeek = typeof gameWeeks.$inferSelect;

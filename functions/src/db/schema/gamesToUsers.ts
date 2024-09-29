@@ -7,8 +7,12 @@ import {users} from "./user";
 export const statusEnum = pgEnum("user_status_in_game", ["invited", "declined", "active", "inactive"]);
 
 export const gamesToUsers = pgTable("games_to_users", {
-  userId: uuid("user_id").notNull().references(() => users.id),
-  gameId: uuid("game_id").notNull().references(() => games.id),
+  userId: uuid("user_id").notNull().references(() => users.id, {
+    onDelete: "cascade",
+  }),
+  gameId: uuid("game_id").notNull().references(() => games.id, {
+    onDelete: "cascade",
+  }),
   userStatusInGame: statusEnum("user_status_in_game").notNull().default("active"),
 }, (t) => ({
   primaryKey: [t.userId, t.gameId],

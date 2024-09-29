@@ -21,8 +21,12 @@ export const games = pgTable("games", {
   }).notNull().default(sql`'21:00:00'`),
   period: varchar("period").notNull(),
   isPrivate: boolean("isPrivate").notNull().default(false),
-  adminId: uuid("adminId").references(() => users.id).notNull(),
   status: statusEnum("status").notNull().default("pending"),
+
+  adminId: uuid("adminId").references(() => users.id, {
+    onDelete: "cascade",
+  }).notNull(),
+
   ...withDates,
 });
 

@@ -190,6 +190,13 @@
       "when": 1727550294002,
       "tag": "0026_blue_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1727564935089,
+      "tag": "0027_pale_the_spike",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,7 @@ import {PubSubOptions} from "firebase-functions/v2/pubsub";
 import {TypeOf, ZodSchema} from "zod";
 
 import type {Maybe, OrPromise} from "../typeUtils";
+import {TopicNames} from "../services/pubsub";
 
 export type HttpHandlerFunctionConfig<
     BodySchema extends ZodSchema | undefined,
@@ -49,6 +50,7 @@ export type HttpHandlerFunction<
 export type PubSubHandlerFunctionConfig<
     BodySchema extends ZodSchema | undefined,
 > = PubSubOptions & {
+    topic: TopicNames,
     bodySchema?: BodySchema,
     loggerName?: string,
     useAppCheck?: boolean,
@@ -58,9 +60,7 @@ export type PubSubHandlerFunctionConfig<
 export type PubSubHandlerFunction<
     BodySchema extends ZodSchema | undefined,
 > = (
-    payload: {
-        body: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown,
-    },
+    payload: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown,
 ) => unknown | Promise<unknown>;
 
 type OKStatusCodes = 200 | 201 | 204;

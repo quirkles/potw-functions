@@ -1,11 +1,10 @@
-import {onMessagePublished} from "firebase-functions/v2/pubsub";
-import {v4} from "uuid";
 import {z} from "zod";
 
-import {getConfig} from "../../config";
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
-import {createLogger} from "../../services/Logger/Logger.pino";
+import {getLogger} from "../../functionWrapper";
+import {pubsubHandler} from "../../functionWrapper/pubsubfunctionWrapper";
+import {TopicNames} from "../../services/pubsub";
 
 const userPayloadSchema = z.object({
   firestoreId: z.string(),
@@ -15,21 +14,8 @@ const userPayloadSchema = z.object({
 
 type UserPayload = z.infer<typeof userPayloadSchema>;
 
-export const createUser = onMessagePublished("create-user", async (event) => {
-  const {
-    correlationId = v4(),
-    ...payload
-  } = event.data.message.json;
-
-  const logger = createLogger({
-    name: "createUser",
-    labels: {
-      functionExecutionId: v4(),
-      correlationId,
-    },
-    shouldLogToConsole: getConfig().env === "local",
-  });
-
+const createUserHandler = async (payload: UserPayload) => {
+  const logger = getLogger();
   logger.info("createUser: begin", {payload});
 
   let validated: UserPayload;
@@ -47,4 +33,10 @@ export const createUser = onMessagePublished("create-user", async (event) => {
   await db.insert(users).values(validated);
 
   logger.info("createUser: inserted", {validated});
+};
+
+export const createUser = pubsubHandler(createUserHandler, {
+  functionName: "createUser",
+  bodySchema: userPayloadSchema,
+  topic: TopicNames.CREATE_USER,
 });

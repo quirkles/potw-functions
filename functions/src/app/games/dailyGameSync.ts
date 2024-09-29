@@ -36,7 +36,7 @@ const initiateDailyGameUpdateHandler = async function(): Promise<void> {
       logger.warning("Invalid game data", {gameData});
       return;
     }
-    if (status === "active" || status === "pending" && addDays(new Date(), 1) >= startDate.toDate()) {
+    if (status === "active" || status === "pending" && addDays(new Date(), 1) >= new Date(startDate)) {
       logger.info("Dispatching daily game update", {gameData});
       await dispatchPubSubEvent(payloadCreators.DAILY_GAME_UPDATE({
         gameSqlId: sqlId,
@@ -68,7 +68,7 @@ export const initiateDailyGameUpdateHttp = httpHandler(initiateDailyGameUpdateHa
 });
 
 export const doDailyGameUpdate = pubsubHandler(
-  async function({body}): Promise<void> {
+  async function(body): Promise<void> {
     const {gameSqlId, gameFirestoreId} = body;
     const logger = getLogger();
     logger.info("dailyGameUpdate: begin", {

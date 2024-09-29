@@ -6,6 +6,7 @@ import keyMirror from "../utils/object";
 export const TopicNames = keyMirror([
   "SEND_EMAIL",
   "DAILY_GAME_UPDATE",
+  "CREATE_USER",
 ] as const);
 
 export type TopicNames = keyof typeof TopicNames;
@@ -13,6 +14,7 @@ export type TopicNames = keyof typeof TopicNames;
 const ACTIONS = keyMirror([
   "SEND_CLOSE_GAME_WEEK_REMINDER",
   "DAILY_GAME_UPDATE",
+  "CREATE_USER",
 ] as const);
 
 type ACTIONS = keyof typeof ACTIONS;
@@ -34,6 +36,15 @@ export const payloadCreators = {
     ...payload,
     action: "DAILY_GAME_UPDATE",
     topic: TopicNames.DAILY_GAME_UPDATE,
+  }),
+  CREATE_USER: (payload: {
+        firestoreId: string;
+        email: string;
+        username?: string;
+    }) => ({
+    ...payload,
+    action: "CREATE_USER",
+    topic: TopicNames.CREATE_USER,
   }),
 } satisfies {
     [key in ACTIONS]: (...args: never[]) => {

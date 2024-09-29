@@ -17,7 +17,9 @@
     "deploy:test:dev": "npm run lint && npm run build && npm run deploy-only:test:dev",
     "deploy:app:dev": "npm run lint && npm run build && npm run deploy-only:app:dev",
     "deploy:dev": "npm run lint && npm run build && npm run deploy-only:dev",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "seed": "ts-node ./src/db/seed/seed.ts",
+    "teardown": "ts-node ./src/db/seed/teardown.ts"
   },
   "engines": {
     "node": "20"
