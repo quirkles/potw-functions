@@ -2,8 +2,8 @@ import {HttpsOptions} from "firebase-functions/v2/https";
 import {PubSubOptions} from "firebase-functions/v2/pubsub";
 import {TypeOf, ZodSchema} from "zod";
 
-import type {Maybe, OrPromise} from "../typeUtils";
 import {TopicNames} from "../services/pubsub";
+import type {Maybe, OrPromise} from "../typeUtils";
 
 export type HttpHandlerFunctionConfig<
     BodySchema extends ZodSchema | undefined,
