@@ -6,11 +6,13 @@ These are the gcp functions for the POTW project. A standard firebase project.
 
 `npm install` to install the devdependencies in the root folder.
 
-`cd functions && npm intsall` to move to the functions folder and install the deps there.
+`cd functions && npm install` to move to the functions folder and install the deps there.
 
 `./scripts/decrypt_secrets.sh -e=local` to decrypt the secrets/config values for the project.
 
-`cd functions && npm run serve` to start the functions emulator.
+`cd functions && npm run dev` to start the functions emulator.
+
+`npm run initLocalDev will ensure the topics used by the functions are created.`
 
 ## Postgresql db
 
