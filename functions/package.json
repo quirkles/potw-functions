@@ -19,7 +19,8 @@
     "deploy:dev": "npm run lint && npm run build && npm run deploy-only:dev",
     "logs": "firebase functions:log",
     "seed": "ts-node ./src/db/seed/seed.ts",
-    "teardown": "ts-node ./src/db/seed/teardown.ts"
+    "teardown": "ts-node ./src/db/seed/teardown.ts",
+    "initLocalDev": "$(gcloud beta emulators pubsub env-init) && ts-node ./src/scripts/localSetup.ts"
   },
   "engines": {
     "node": "20"
