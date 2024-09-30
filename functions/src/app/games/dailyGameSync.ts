@@ -26,17 +26,20 @@ const initiateDailyGameUpdateHandler = async function(): Promise<void> {
     .stream();
   gamesStream.on("data", async (doc) => {
     const gameData = doc.data();
-    logger.info("Game update", {game: gameData || "none"});
+    logger.info("Game data", {game: gameData || "none"});
     const {
       sqlId,
       startDate,
       status,
     } = gameData;
     if (!sqlId || !startDate) {
-      logger.warning("Invalid game data", {gameData});
+      logger.warning("Invalid game data, missing sql id or start date", {gameData});
       return;
     }
-    if (status === "active" || status === "pending" && addDays(new Date(), 1) >= new Date(startDate)) {
+    if (
+      status === "active" ||
+            (status === "pending" && addDays(new Date(), 1) >= new Date(startDate))
+    ) {
       logger.info("Dispatching daily game update", {gameData});
       await dispatchPubSubEvent(payloadCreators.DAILY_GAME_UPDATE({
         gameSqlId: sqlId,
@@ -104,8 +107,8 @@ export const doDailyGameUpdate = pubsubHandler(
 
     if (
       game.endDate &&
-      game.status === "active" &&
-      addDays(new Date(), 1) >= new Date(game.endDate)
+            game.status === "active" &&
+            addDays(new Date(), 1) >= new Date(game.endDate)
     ) {
       logger.info("Game is active and end date is today or tomorrow, updating status to inactive", {game});
       await db.update(games).set({status: "inactive"}).where(eq(games.id, gameSqlId)).execute();
@@ -141,24 +144,24 @@ export const doDailyGameUpdate = pubsubHandler(
   });
 
 async function processResults(results: {
-  game_weeks: SelectGameWeek;
-  games: SelectGame | null;
+    game_weeks: SelectGameWeek;
+    games: SelectGame | null;
 }[]): Promise<void> {
   const logger = getLogger();
   logger.info("Processing game weeks", {results});
   let cursor: SelectGameWeek | null = null;
   const actions: {
-    gameWeekId: string;
-    adminId: string;
-    action: "setOverdue" | "closeGameWeek" | "startGameWeek";
-  }[] = [];
+        gameWeekId: string;
+        adminId: string;
+        action: "setOverdue" | "closeGameWeek" | "startGameWeek";
+    }[] = [];
   for (const result of results) {
     const {game_weeks: gameWeek, games: game} = result;
     if (cursor === null) {
       cursor = gameWeek;
     } else if (
       gameWeek.startDateTime >= cursor.startDateTime &&
-        gameWeek.id > cursor.id
+            gameWeek.id > cursor.id
     ) {
       cursor = gameWeek;
     }
@@ -174,7 +177,7 @@ async function processResults(results: {
       action = "closeGameWeek";
     } else if (
       gameWeek.status === "pending" &&
-        gameWeek.startDateTime <= calculateNextGameWeekStartDate(game, null)
+            gameWeek.startDateTime <= calculateNextGameWeekStartDate(game, null)
     ) {
       action = "startGameWeek";
     }
