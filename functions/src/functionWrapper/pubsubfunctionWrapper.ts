@@ -28,7 +28,7 @@ export function pubsubHandler<
     functionName,
   } = config || {};
   return onMessagePublished({
-    topic: config?.topic,
+    topic: config.topic,
   }, async (payload) => {
     const logLabels: Record<string, string> = {
       requestId: v4(),

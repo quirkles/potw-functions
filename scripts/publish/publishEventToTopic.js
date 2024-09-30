@@ -11,4 +11,8 @@ async function publishEventToTopic(topicName, event) {
 }
 
 
-module.exports = {publishEventToTopic};
+publishEventToTopic('CREATE_USER', {test: 'event'}).then(() => {
+    console.log('Event published');
+}).catch((err) => {
+    console.error('Error publishing event', err);
+})
