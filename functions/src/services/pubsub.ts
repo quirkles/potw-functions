@@ -56,7 +56,10 @@ export const payloadCreators = {
 export function dispatchPubSubEvent(action: ReturnType<typeof payloadCreators[ACTIONS]>) {
   const logger = getLogger();
   logger.info("Dispatching event", {action});
-  const pubsub = new PubSub();
+  const pubsubConfig = process.env.PUBSUB_EMULATOR_PORT ? {
+    apiEndpoint: `localhost:${process.env.PUBSUB_EMULATOR_PORT}`,
+  } : {};
+  const pubsub = new PubSub(pubsubConfig);
   const {topic: topicName, ...payloadObj} = action;
   const topic = pubsub.topic(topicName);
   return topic.publishMessage({

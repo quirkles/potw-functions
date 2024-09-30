@@ -82,11 +82,11 @@ export const doDailyGameUpdate = pubsubHandler(
 
     const [game] = await db.select().from(games).where(eq(games.id, gameSqlId)).execute();
 
+    logger.info("Game found", {game: game || "none"});
+
     if (!game) {
       throw new Error("Game not found");
     }
-
-    const gameRef = getFirestore().collection("games").doc(gameFirestoreId);
 
 
     if (game.status === "inactive") {
@@ -94,13 +94,19 @@ export const doDailyGameUpdate = pubsubHandler(
       return;
     }
 
+    const gameRef = getFirestore().collection("games").doc(gameFirestoreId);
+
+
+    logger.info("Game ref", {gameRef});
+
     if (game.status === "pending") {
+      logger.info("Game is pending", {game});
       if (addDays(new Date(), 1) >= new Date(game.startDate)) {
         logger.info("Game is pending and start date is today or tomorrow, updating status to active", {game});
         await db.update(games).set({status: "active"}).where(eq(games.id, gameSqlId)).execute();
         await gameRef.update({status: "active"});
       } else {
-        logger.info("Game is pending, nothing to do", {game});
+        logger.info("Game is pending, start date is not today or tomorrow, nothing needs to be done", {game});
         return;
       }
     }
@@ -140,6 +146,7 @@ export const doDailyGameUpdate = pubsubHandler(
       gameSqlId: z.string(),
       gameFirestoreId: z.string(),
     }),
+    functionName: "doDailyGameUpdate",
     topic: TopicNames.DAILY_GAME_UPDATE,
   });
 
@@ -197,13 +204,20 @@ async function processResults(results: {
 
     const db = getDb();
 
-    await db.transaction(async (trx) => {
+    const txResults = await db.transaction(async (trx) => {
+      const txReturns: Record<string, unknown>[] = [];
       for (const action of actions) {
         if (action.action === "setOverdue") {
           logger.info("Sending reminder", {gameWeekId: action.gameWeekId});
           trx.update(gameWeeks)
             .set({status: "overdue"})
-            .where(eq(gameWeeks.id, action.gameWeekId));
+            .where(eq(gameWeeks.id, action.gameWeekId))
+            .returning({
+              gameWeekId: gameWeeks.id,
+              status: gameWeeks.status,
+            }).then((res) => {
+              txReturns.push({...res, expectedStatus: "overdue"});
+            });
           pubSubPromises.push(dispatchPubSubEvent(payloadCreators.SEND_CLOSE_GAME_WEEK_REMINDER({
             gameWeekId: action.gameWeekId,
             adminId: action.adminId,
@@ -219,15 +233,28 @@ async function processResults(results: {
           logger.info("Closing game week", {gameWeekId: action.gameWeekId});
           trx.update(gameWeeks)
             .set({status: "complete"})
-            .where(eq(gameWeeks.id, action.gameWeekId));
+            .where(eq(gameWeeks.id, action.gameWeekId)).returning({
+              gameWeekId: gameWeeks.id,
+              status: gameWeeks.status,
+            }).then((res) => {
+              txReturns.push({...res, expectedStatus: "complete"});
+            });
         } else if (action.action === "startGameWeek") {
           logger.info("Starting game week", {gameWeekId: action.gameWeekId});
           trx.update(gameWeeks)
             .set({status: "current"})
-            .where(eq(gameWeeks.id, action.gameWeekId));
+            .where(eq(gameWeeks.id, action.gameWeekId)).returning({
+              gameWeekId: gameWeeks.id,
+              status: gameWeeks.status,
+            }).then((res) => {
+              txReturns.push({...res, expectedStatus: "current"});
+            });
         }
       }
+      return txReturns;
     });
+
+    logger.info("Transaction results", {txResults});
 
     await Promise.all(pubSubPromises);
   }

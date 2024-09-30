@@ -15,9 +15,7 @@ import {TopicNames} from "../services/pubsub";
 
 
 async function main() {
-  const pubsub = new PubSub({
-    projectId: process.env.PUBSUB_PROJECT_ID,
-  });
+  const pubsub = new PubSub();
   for (const topicName of Object.values(TopicNames)) {
     console.log(`Creating topic: ${topicName}`);
     await pubsub.createTopic(topicName).catch((err) => {
