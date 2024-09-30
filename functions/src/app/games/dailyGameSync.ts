@@ -137,7 +137,7 @@ export const doDailyGameUpdate = pubsubHandler(
       gameSqlId: z.string(),
       gameFirestoreId: z.string(),
     }),
-    topic: TopicNames.SEND_EMAIL,
+    topic: TopicNames.DAILY_GAME_UPDATE,
   });
 
 async function processResults(results: {
