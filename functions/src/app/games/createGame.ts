@@ -8,6 +8,7 @@ import {users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {initializeAppAdmin} from "../../services/firebase";
+import {getFirestore} from "../../services/firestore/firestore";
 import {getIdFromSqlId} from "../../services/firestore/user";
 import {initializeGameWeeksForGame} from "../../services/games/intializeNextGameWeeks";
 import {inviteUsers} from "../../services/users/inviteUsers";
@@ -17,7 +18,6 @@ import {User, userSchema} from "../../validation/user";
 
 import {createGamePayloadSchema} from "./schemas";
 import {periodToPeriodString} from "./transforms";
-import {getFirestore} from "../../services/firestore/firestore";
 
 export const createGame = httpHandler(async ({
   body,
