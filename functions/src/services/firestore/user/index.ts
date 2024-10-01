@@ -2,11 +2,11 @@ import {randomBytes} from "crypto";
 
 import {auth} from "firebase-admin";
 import {getAuth} from "firebase-admin/auth";
-import {getFirestore} from "firebase-admin/firestore";
 
 import {getLogger} from "../../../functionWrapper";
 import {sendInviteToEmail} from "../../email/invite";
 import {makeId} from "../../utils/string";
+import {getFirestore} from "../firestore";
 
 export async function getIdFromSqlId(sqlId: string): Promise<string | null> {
   const db = getFirestore();

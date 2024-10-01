@@ -1,7 +1,6 @@
 import {addDays, addHours} from "date-fns";
 import {and, asc, eq} from "drizzle-orm";
 import {inArray} from "drizzle-orm/sql/expressions/conditions";
-import {getFirestore} from "firebase-admin/firestore";
 import {z} from "zod";
 
 import {getDb} from "../../db/dbClient";
@@ -11,6 +10,7 @@ import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {pubsubHandler} from "../../functionWrapper/pubsubfunctionWrapper";
 import {onScheduleHandler} from "../../functionWrapper/schedulefunctionWrapper";
+import {getFirestore} from "../../services/firestore/firestore";
 import {initializeGameWeeksForGame} from "../../services/games/intializeNextGameWeeks";
 import {dispatchPubSubEvent, payloadCreators, TopicNames} from "../../services/pubsub";
 import {calculateNextGameWeekStartDate} from "../../utils/dates";

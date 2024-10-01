@@ -1,6 +1,5 @@
 import {eq} from "drizzle-orm";
 import {inArray} from "drizzle-orm/sql/expressions/conditions";
-import {getFirestore} from "firebase-admin/firestore";
 
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
@@ -18,6 +17,7 @@ import {User, userSchema} from "../../validation/user";
 
 import {createGamePayloadSchema} from "./schemas";
 import {periodToPeriodString} from "./transforms";
+import {getFirestore} from "../../services/firestore/firestore";
 
 export const createGame = httpHandler(async ({
   body,

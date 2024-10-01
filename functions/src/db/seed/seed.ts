@@ -9,7 +9,7 @@ import {seedUsers} from "./seedUsers";
 const USERS_COUNT = 100;
 
 async function main() {
-  const [env = "local"] = process.argv.slice(2);
+  const env = (process.env.ENV || "local").toLowerCase();
 
   const configPath = path.join(__dirname, "../../../", `.env.${env}`);
 

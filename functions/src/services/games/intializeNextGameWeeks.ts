@@ -1,6 +1,5 @@
 import {eq} from "drizzle-orm";
 import {gte} from "drizzle-orm/sql/expressions/conditions";
-import {getFirestore} from "firebase-admin/firestore";
 
 import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
@@ -9,6 +8,7 @@ import {getLogger} from "../../functionWrapper";
 import {NotFoundError} from "../../utils/Errors";
 import {calculateNextGameWeekStartDate} from "../../utils/dates";
 import {GameWeek} from "../../validation/gameWeek";
+import {getFirestore} from "../firestore/firestore";
 
 export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: number): Promise<GameWeek[]> {
   const logger = getLogger();

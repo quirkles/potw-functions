@@ -7,7 +7,8 @@
     "test": "jest",
     "deploy": "firebase deploy --only functions",
     "migrations:generate": "drizzle-kit generate:pg",
-    "migrations:run:local": "ts-node drizzle.migrate.ts"
+    "migrations:run:local": "ts-node drizzle.migrate.ts",
+    "migrations:run:dev": "export ENV=dev && ts-node drizzle.migrate.ts"
   },
   "author": "quirkles",
   "license": "ISC",
