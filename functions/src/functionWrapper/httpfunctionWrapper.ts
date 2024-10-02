@@ -26,9 +26,9 @@ export function httpHandler<
   config?: HttpHandlerFunctionConfig<BodySchema, QuerySchema, ResponseSchema, RequireAuthToken>
 ): HttpsFunction {
   const {
-    bodySchema = z.any().optional(),
-    querySchema = z.any().optional(),
-    responseSchema = z.any().optional(),
+    bodySchema,
+    querySchema,
+    responseSchema,
     useAppCheck = false,
     functionName,
   } = config || {};
@@ -94,10 +94,14 @@ export function httpHandler<
 
     let validatedBody: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown;
     try {
-      validatedBody = bodySchema.parse(body);
-      logger.debug("Validated request body", {
-        validatedBody,
-      });
+      if (bodySchema) {
+        validatedBody = bodySchema.parse(body);
+        logger.debug("Validated request body", {
+          validatedBody,
+        });
+      } else {
+        logger.debug("No body schema provided, skipping body validation");
+      }
     } catch (e) {
       let errorMessage: string | Record<string, unknown> = (e as Error).message;
       if (e instanceof ZodError) {
@@ -117,10 +121,14 @@ export function httpHandler<
     let validatedQuery: QuerySchema extends ZodSchema ? TypeOf<QuerySchema> : unknown;
 
     try {
-      validatedQuery = querySchema.parse(query);
-      logger.debug("Validated request query", {
-        validatedQuery,
-      });
+      if (querySchema) {
+        validatedQuery = querySchema.parse(query);
+        logger.debug("Validated request query", {
+          validatedQuery,
+        });
+      } else {
+        logger.debug("No query schema provided, skipping query validation");
+      }
     } catch (e) {
       let errorMessage: string | Record<string, unknown> = (e as Error).message;
       if (e instanceof ZodError) {
@@ -194,6 +202,11 @@ export function httpHandler<
       return;
     }
     try {
+      if (!responseSchema) {
+        logger.debug("No response schema provided, sending response as is");
+        res.status(statusCode).json(response);
+        return;
+      }
       res.status(statusCode).json(
         responseSchema.parse(response)
       );
