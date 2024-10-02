@@ -1,5 +1,6 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
 import {v4} from "uuid";
+import {z} from "zod";
 
 import {getConfig} from "../../config";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
@@ -75,4 +76,12 @@ export const handleEmailLogin = httpHandler(async ({
       codeVerifier,
     },
   };
+}, {
+  bodySchema: z.object({
+    email: z.string(),
+  }),
+  responseSchema: z.object({
+    codeVerifier: z.string(),
+  }),
+  functionName: "handleEmailLogin",
 });
