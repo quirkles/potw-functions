@@ -97,7 +97,7 @@ export async function seedGames({
                 userId: userId,
               }).onConflictDoNothing()
             ),
-            ...others.flatMap((game, i) => {
+            ...others.flatMap((game) => {
               return playersByFirestoreId[game.firestoreId].map((userId) =>
                 tx.insert(gamesToUsers).values({
                   gameId: game.sqlId,
