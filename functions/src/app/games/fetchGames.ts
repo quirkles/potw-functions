@@ -37,6 +37,7 @@ export const fetchGames = httpHandler(async ({
     },
   };
 }, {
+  functionName: "fetchGames",
   querySchema: z.object({
     userId: z.string().optional(),
   }),

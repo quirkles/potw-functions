@@ -42,7 +42,7 @@ export function pubsubHandler<
     } = payload.data.message.json;
 
     const logger = createLogger({
-      logName: `httpHandler:${functionName || func.name || "unknownFunction"}`,
+      logName: `pubsubHandler.${functionName || func.name || "unknownFunction"}`,
       shouldLogToConsole: getConfig().env === "local",
       labels: {
         ...logLabels,

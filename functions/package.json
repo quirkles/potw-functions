@@ -20,7 +20,7 @@
     "logs": "firebase functions:log",
     "seed:local": "ts-node ./src/db/seed/seed.ts",
     "seed:dev": "export ENV=DEV && ts-node ./src/db/seed/seed.ts",
-    "teardown": "ts-node ./src/db/seed/teardown.ts",
+    "teardown:dev": "export ENV=DEV && ts-node ./src/db/seed/teardown.ts",
     "initLocalDev": "$(gcloud beta emulators pubsub env-init) && ts-node ./src/scripts/localSetup.ts"
   },
   "engines": {

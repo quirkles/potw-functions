@@ -11,6 +11,7 @@ export function getRandomElement<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-export function removeElements<T>(array: T[], elements: T[]): T[] {
-  return array.filter((element) => !elements.includes(element));
+export function removeElements<T>(
+  array: T[], elementsToRemove: T[]): T[] {
+  return array.filter((element) => !elementsToRemove.includes(element));
 }

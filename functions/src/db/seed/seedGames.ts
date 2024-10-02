@@ -1,11 +1,11 @@
 import {faker} from "@faker-js/faker";
 import {DocumentReference} from "@google-cloud/firestore";
+import {sub} from "date-fns";
 import {add} from "date-fns/add";
 
 import {getRandomElement, removeElements, shuffle} from "../../utils/array";
 import {getTrueFalse} from "../../utils/logic";
 import {getRandomIntegerInRange} from "../../utils/number";
-import {allPeriodStrings} from "../../validation/game";
 import {games} from "../schema/game";
 import {gamesToUsers} from "../schema/gamesToUsers";
 
@@ -21,7 +21,9 @@ export async function seedGames({
   userIds,
   ensureIncludedUserIds,
 }: ISeedGamesProps) {
-  const now = new Date();
+  const start = sub(new Date(), {
+    weeks: 4,
+  });
 
   const firestoreGameRefs: DocumentReference[] = [];
 
@@ -36,18 +38,16 @@ export async function seedGames({
     }[] = [];
     for (const userId of ensureIncludedUserIds) {
       const weeks: Date[] = Array.from({
-        length: 6,
-      }).map((_, i) => (add(now, {
-        weeks: (i - 2),
+        length: 12,
+      }).map((_, i) => (add(start, {
+        weeks: i,
       })));
       for (const week of weeks) {
         const gameOneRef = firestore.collection("games").doc();
-        const gameTwoRef = firestore.collection("games").doc();
 
         const gameOnePlayers = shuffle(userIds).slice(0, getRandomIntegerInRange(6, 10));
-        const gameTwoPlayers = shuffle(userIds).slice(0, getRandomIntegerInRange(6, 10));
 
-        firestoreGameRefs.push(gameOneRef, gameTwoRef);
+        firestoreGameRefs.push(gameOneRef);
 
         const gameOnePayload = getGamePayload({
           adminId: userId,
@@ -56,16 +56,32 @@ export async function seedGames({
           playerIds: gameOnePlayers,
         });
 
-        const gameTwoPayload = getGamePayload({
-          adminId: getRandomElement(gameTwoPlayers),
-          firestoreId: gameTwoRef.id,
-          startDate: week,
-          playerIds: [userId, ...gameTwoPlayers],
+        const playersByFirestoreId: {
+            [firestoreId: string]: string[]
+        } = {};
+
+        const otherGames = Array.from({
+          length: getRandomIntegerInRange(4, 6),
+        }).map(() => {
+          const gamePlayers = shuffle(removeElements(userIds, [userId])).slice(0, getRandomIntegerInRange(6, 10));
+          const adminId = getRandomElement(removeElements(gamePlayers, [userId]));
+          const gameRef = firestore.collection("games").doc();
+          firestoreGameRefs.push(gameRef);
+          if (getTrueFalse(0.2)) {
+            gamePlayers.push(userId);
+          }
+          playersByFirestoreId[gameRef.id] = gamePlayers;
+          return getGamePayload({
+            adminId: adminId,
+            firestoreId: gameRef.id,
+            startDate: week,
+            playerIds: gamePlayers,
+          });
         });
 
         await tx.insert(games).values([
           gameOnePayload,
-          gameTwoPayload,
+          ...otherGames,
         ]).returning({
           sqlId: games.id,
           firestoreId: games.firestoreId,
@@ -73,7 +89,7 @@ export async function seedGames({
           startDate: games.startDate,
         }).then((result) => {
           results.push(...result);
-          const [gameOneResult, gameTwoResult] = result;
+          const [gameOneResult, ...others] = result;
           return Promise.all([
             ...gameOnePlayers.map((userId) =>
               tx.insert(gamesToUsers).values({
@@ -81,12 +97,15 @@ export async function seedGames({
                 userId: userId,
               }).onConflictDoNothing()
             ),
-            ...gameTwoPlayers.map((userId) =>
-              tx.insert(gamesToUsers).values({
-                gameId: gameTwoResult.sqlId,
-                userId: userId,
-              })
-            )]);
+            ...others.flatMap((game, i) => {
+              return playersByFirestoreId[game.firestoreId].map((userId) =>
+                tx.insert(gamesToUsers).values({
+                  gameId: game.sqlId,
+                  userId,
+                }).onConflictDoNothing()
+              );
+            }),
+          ]);
         });
       }
     }
@@ -143,18 +162,19 @@ function getGamePayload({
   }) : null;
   return {
     name: `${faker.word.adjective()}-${faker.color.human()}-${faker.animal.type()}`,
-    description: getTrueFalse(0.2) ? faker.lorem.sentence() : null,
-    isPrivate: getTrueFalse(0.4),
+    description: getTrueFalse(0.6) ? faker.lorem.sentence() : null,
+    isPrivate: getTrueFalse(0.2),
     adminId,
     firestoreId,
     startDate: startDate.toISOString().slice(0, 10),
     endDate: endDate ? endDate.toISOString().slice(0, 10) : null,
     status: new Date(startDate) < new Date() ? "active" : "pending",
     period: getRandomElement(
-      removeElements(
-        [...allPeriodStrings],
-        ["daily", "biWeekly"]
-      )
+      [
+        "every-thursday",
+        "every-friday",
+        "every-saturday",
+      ]
     ),
   };
 }

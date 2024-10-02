@@ -47,7 +47,7 @@ export function httpHandler<
     const correlationId = String(headers["x-correlation-id"] || v4());
 
     const logger = createLogger({
-      logName: `httpHandler:${functionName || func.name || "unknownFunction"}`,
+      logName: `httpHandler.${functionName || func.name || "unknownFunction"}`,
       shouldLogToConsole: getConfig().env === "local",
       labels: {
         ...logLabels,
