@@ -1,27 +1,27 @@
-import {onRequest} from "firebase-functions/v2/https";
 import {OAuth2Client} from "google-auth-library";
 import {sign} from "jsonwebtoken";
 import {v4} from "uuid";
+import {z} from "zod";
 
 import {getConfig} from "../../config";
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
+import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {createLogger} from "../../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../../services/firebase";
 import {saveOrGetId, setField} from "../../services/firestore/user";
+import {UnauthorizedError} from "../../utils/Errors";
 
-export const handleGoogleLogin = onRequest({
-  cors: true,
-}, async (request, response) => {
+export const handleGoogleLogin = httpHandler(async ({body, headers}) => {
   initializeAppAdmin();
   const client = new OAuth2Client();
-  const tokenInfo = await client.getTokenInfo(request.body.token);
+  const tokenInfo = await client.getTokenInfo(body.token);
   const logger = createLogger({
     logName: "handleGoogleLogin",
     shouldLogToConsole: getConfig().env === "local",
     labels: {
       functionExecutionId: v4(),
-      correlationId: request.headers["x-correlation-id"] as string || v4(),
+      correlationId: headers["x-correlation-id"] as string || v4(),
     },
   });
   logger.info("handleGoogleLogin: start", {
@@ -31,8 +31,7 @@ export const handleGoogleLogin = onRequest({
     logger.error("handleGoogleLogin: Invalid token", {
       tokenInfo,
     });
-    response.status(401).send("handleGoogleLogin: Invalid token");
-    return;
+    throw new UnauthorizedError("Invalid token");
   }
   const firestoreId = await saveOrGetId(tokenInfo.email);
 
@@ -70,6 +69,11 @@ export const handleGoogleLogin = onRequest({
     payload,
   });
   const token = sign(payload, getConfig().jwtSecret);
-  response.json({token});
-  return;
+  return {
+    response: {token},
+  };
+}, {
+  bodySchema: z.object({
+    token: z.string(),
+  }),
 });
