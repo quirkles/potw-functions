@@ -34,6 +34,7 @@ export function httpHandler<
   } = config || {};
   return onRequest({
     cors: config?.cors || true,
+    invoker: "public",
   }, async (req, res) => {
     const logLabels: Record<string, string> = {
       requestId: v4(),
