@@ -32,7 +32,9 @@ export function httpHandler<
     useAppCheck = false,
     functionName,
   } = config || {};
-  return onRequest(async (req, res) => {
+  return onRequest({
+    cors: config?.cors || true,
+  }, async (req, res) => {
     const logLabels: Record<string, string> = {
       requestId: v4(),
       functionInstanceId,
