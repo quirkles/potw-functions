@@ -2,7 +2,7 @@ import {getAppCheck} from "firebase-admin/app-check";
 import {HttpsFunction, onRequest} from "firebase-functions/v2/https";
 import {req as reqSerializer} from "pino-std-serializers";
 import {v4} from "uuid";
-import {TypeOf, z, ZodError, ZodSchema} from "zod";
+import {TypeOf, ZodError, ZodSchema} from "zod";
 
 import {getConfig} from "../config";
 import {createLogger} from "../services/Logger/Logger.pino";
