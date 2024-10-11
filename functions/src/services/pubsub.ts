@@ -2,6 +2,7 @@ import {PubSub} from "@google-cloud/pubsub";
 
 import {getLogger} from "../functionWrapper";
 import keyMirror from "../utils/object";
+import {getConfig} from "../config";
 
 export const TopicNames = keyMirror([
   "SEND_EMAIL",
@@ -56,13 +57,18 @@ export const payloadCreators = {
 export function dispatchPubSubEvent(action: ReturnType<typeof payloadCreators[ACTIONS]>) {
   const logger = getLogger();
   logger.info("Dispatching event", {action});
-  const pubsubConfig = process.env.PUBSUB_EMULATOR_PORT ? {
+  const pubsubConfig = getConfig().env === "local" ? {
     apiEndpoint: `localhost:${process.env.PUBSUB_EMULATOR_PORT}`,
-  } : {};
+  }: {};
+  logger.info("Pubsub config", {pubsubConfig});
   const pubsub = new PubSub(pubsubConfig);
   const {topic: topicName, ...payloadObj} = action;
   const topic = pubsub.topic(topicName);
   return topic.publishMessage({
     json: payloadObj,
+  }).then((messageId) => {
+    logger.info("Event dispatched", {messageId});
+  }).catch((err) => {
+    logger.error("Error dispatching event", {err});
   });
 }
