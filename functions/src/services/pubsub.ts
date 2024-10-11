@@ -1,8 +1,8 @@
 import {PubSub} from "@google-cloud/pubsub";
 
+import {getConfig} from "../config";
 import {getLogger} from "../functionWrapper";
 import keyMirror from "../utils/object";
-import {getConfig} from "../config";
 
 export const TopicNames = keyMirror([
   "SEND_EMAIL",
