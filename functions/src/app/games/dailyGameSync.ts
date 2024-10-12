@@ -139,7 +139,6 @@ export const doDailyGameUpdate = pubsubHandler(
       .execute();
 
     await processResults(gameWeekResults);
-
     return;
   }, {
     bodySchema: z.object({
@@ -148,6 +147,8 @@ export const doDailyGameUpdate = pubsubHandler(
     }),
     functionName: "doDailyGameUpdate",
     topic: TopicNames.DAILY_GAME_UPDATE,
+    maxInstances: 15,
+    retry: false,
   });
 
 async function processResults(results: {
