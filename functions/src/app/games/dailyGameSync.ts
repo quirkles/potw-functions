@@ -15,16 +15,21 @@ import {initializeGameWeeksForGame} from "../../services/games/intializeNextGame
 import {dispatchPubSubEvent, payloadCreators, TopicNames} from "../../services/pubsub";
 import {calculateNextGameWeekStartDate} from "../../utils/dates";
 
+const BATCH_SIZE = 20;
 
 const initiateDailyGameUpdateHandler = async function(): Promise<void> {
   const logger = getLogger();
   logger.info("initiateDailyGameUpdate: begin");
   let isStreamingGames = true;
+  const gamesToProcess: {
+        gameSqlId: string;
+        gameFirestoreId: string;
+    }[] = [];
   const gamesStream = getFirestore()
     .collection("games")
     .where("status", "!=", "inactive")
     .stream();
-  gamesStream.on("data", async (doc) => {
+  gamesStream.on("data", (doc) => {
     const gameData = doc.data();
     logger.info("Game data", {game: gameData || "none"});
     const {
@@ -41,10 +46,10 @@ const initiateDailyGameUpdateHandler = async function(): Promise<void> {
             (status === "pending" && addDays(new Date(), 1) >= new Date(startDate))
     ) {
       logger.info("Dispatching daily game update", {gameData});
-      await dispatchPubSubEvent(payloadCreators.DAILY_GAME_UPDATE({
+      gamesToProcess.push({
         gameSqlId: sqlId,
         gameFirestoreId: String(doc.id),
-      }));
+      });
     } else {
       logger.info("Game is not active or due to start in one day. Ignoring", {gameData});
     }
@@ -56,8 +61,12 @@ const initiateDailyGameUpdateHandler = async function(): Promise<void> {
     isStreamingGames = false;
     logger.info("End of game stream");
   });
-  while (isStreamingGames) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  while (isStreamingGames || gamesToProcess.length > 0) {
+    if (gamesToProcess.length >= BATCH_SIZE || (!isStreamingGames && gamesToProcess.length > 0)) {
+      const batch = gamesToProcess.splice(0, BATCH_SIZE);
+      await dispatchPubSubEvent(payloadCreators.DAILY_GAME_UPDATE(batch));
+    }
+    await new Promise((resolve) => setTimeout(resolve, 50));
   }
 };
 export const initiateDailyGameUpdate = onScheduleHandler(initiateDailyGameUpdateHandler, {
@@ -72,79 +81,105 @@ export const initiateDailyGameUpdateHttp = httpHandler(initiateDailyGameUpdateHa
 
 export const doDailyGameUpdate = pubsubHandler(
   async function(body): Promise<void> {
-    const {gameSqlId, gameFirestoreId} = body;
-    const logger = getLogger();
-    logger.info("dailyGameUpdate: begin", {
-      gameSqlId,
-    });
-
     const db = getDb();
+    const logger = getLogger();
+    logger.info("dailyGameUpdate: begin", {body});
+    let processingCount = 0;
+    while (body.length) {
+      logger.info("dailyGameUpdate: processing", {
+        processingCount,
+        remaining: body.length,
+      });
+      const toProcess = body.shift();
+      if (processingCount >= BATCH_SIZE || !toProcess) {
+        logger.debug("dailyGameUpdate: waiting tick", {
+          processingCount,
+          remaining: body.length,
+          toProcess: toProcess || "none",
+        });
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        continue;
+      }
 
-    const [game] = await db.select().from(games).where(eq(games.id, gameSqlId)).execute();
+      processingCount++;
 
-    logger.info("Game found", {game: game || "none"});
+      const {gameSqlId, gameFirestoreId} = toProcess;
 
-    if (!game) {
-      throw new Error("Game not found");
-    }
-
-
-    if (game.status === "inactive") {
-      logger.info("Game is inactive, nothing to do", {game});
-      return;
-    }
-
-    const gameRef = getFirestore().collection("games").doc(gameFirestoreId);
+      logger.info("dailyGameUpdate: begin", {
+        processing: {
+          gameSqlId,
+          gameFirestoreId,
+        },
+      });
 
 
-    logger.info("Game ref", {gameRef});
+      const [game] = await db.select().from(games).where(eq(games.id, gameSqlId)).execute();
 
-    if (game.status === "pending") {
-      logger.info("Game is pending", {game});
-      if (addDays(new Date(), 1) >= new Date(game.startDate)) {
-        logger.info("Game is pending and start date is today or tomorrow, updating status to active", {game});
-        await db.update(games).set({status: "active"}).where(eq(games.id, gameSqlId)).execute();
-        await gameRef.update({status: "active"});
-      } else {
-        logger.info("Game is pending, start date is not today or tomorrow, nothing needs to be done", {game});
+      logger.info("Game found", {game: game || "none"});
+
+      if (!game) {
+        throw new Error("Game not found");
+      }
+
+
+      if (game.status === "inactive") {
+        logger.info("Game is inactive, nothing to do", {game});
         return;
       }
-    }
 
-    if (
-      game.endDate &&
-            game.status === "active" &&
-            addDays(new Date(), 1) >= new Date(game.endDate)
-    ) {
-      logger.info("Game is active and end date is today or tomorrow, updating status to inactive", {game});
-      await db.update(games).set({status: "inactive"}).where(eq(games.id, gameSqlId)).execute();
-      await gameRef.update({status: "inactive"});
-      return;
-    }
+      const gameRef = getFirestore().collection("games").doc(gameFirestoreId);
 
 
-    logger.info("Game is active, updating game weeks", {game});
-    const result = await initializeGameWeeksForGame(gameSqlId, 2);
-    logger.info("Game weeks updated", {result});
-    const gameWeekResults = await db.select().from(gameWeeks)
-      .where(
-        and(
-          eq(gameWeeks.gameId, gameSqlId),
-          inArray(gameWeeks.status, ["pending", "current", "overdue"]),
+      logger.info("Game ref", {gameRef});
+
+      if (game.status === "pending") {
+        logger.info("Game is pending", {game});
+        if (addDays(new Date(), 1) >= new Date(game.startDate)) {
+          logger.info("Game is pending and start date is today or tomorrow, updating status to active", {game});
+          await db.update(games).set({status: "active"}).where(eq(games.id, gameSqlId)).execute();
+          await gameRef.update({status: "active"});
+        } else {
+          logger.info("Game is pending, start date is not today or tomorrow, nothing needs to be done", {game});
+          return;
+        }
+      }
+
+      if (
+        game.endDate &&
+          game.status === "active" &&
+          addDays(new Date(), 1) >= new Date(game.endDate)
+      ) {
+        logger.info("Game is active and end date is today or tomorrow, updating status to inactive", {game});
+        await db.update(games).set({status: "inactive"}).where(eq(games.id, gameSqlId)).execute();
+        await gameRef.update({status: "inactive"});
+        return;
+      }
+
+
+      logger.info("Game is active, updating game weeks", {game});
+      const result = await initializeGameWeeksForGame(gameSqlId, 2);
+      logger.info("Game weeks updated", {result});
+      const gameWeekResults = await db.select().from(gameWeeks)
+        .where(
+          and(
+            eq(gameWeeks.gameId, gameSqlId),
+            inArray(gameWeeks.status, ["pending", "current", "overdue"]),
+          )
         )
-      )
-      .leftJoin(games, eq(gameWeeks.gameId, games.id))
-      .orderBy(asc(gameWeeks.startDateTime), asc(gameWeeks.id))
-      .limit(50)
-      .execute();
+        .leftJoin(games, eq(gameWeeks.gameId, games.id))
+        .orderBy(asc(gameWeeks.startDateTime), asc(gameWeeks.id))
+        .limit(50)
+        .execute();
 
-    await processResults(gameWeekResults);
+      await processResults(gameWeekResults);
+      processingCount--;
+    }
     return;
   }, {
-    bodySchema: z.object({
+    bodySchema: z.array(z.object({
       gameSqlId: z.string(),
       gameFirestoreId: z.string(),
-    }),
+    })),
     functionName: "doDailyGameUpdate",
     topic: TopicNames.DAILY_GAME_UPDATE,
     maxInstances: 15,

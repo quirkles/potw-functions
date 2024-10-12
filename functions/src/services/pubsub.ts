@@ -33,7 +33,7 @@ export const payloadCreators = {
   DAILY_GAME_UPDATE: (payload: {
     gameSqlId: string;
     gameFirestoreId: string;
-  }) => ({
+  }[]) => ({
     ...payload,
     action: "DAILY_GAME_UPDATE",
     topic: TopicNames.DAILY_GAME_UPDATE,
@@ -51,7 +51,7 @@ export const payloadCreators = {
     [key in ACTIONS]: (...args: never[]) => {
       action: key;
       topic: TopicNames
-    } & Record<string, string | number>;
+    } & Record<string, unknown>;
 };
 
 export function dispatchPubSubEvent(action: ReturnType<typeof payloadCreators[ACTIONS]>) {
