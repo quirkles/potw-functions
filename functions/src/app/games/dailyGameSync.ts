@@ -64,7 +64,9 @@ const initiateDailyGameUpdateHandler = async function(): Promise<void> {
   while (isStreamingGames || gamesToProcess.length > 0) {
     if (gamesToProcess.length >= BATCH_SIZE || (!isStreamingGames && gamesToProcess.length > 0)) {
       const batch = gamesToProcess.splice(0, BATCH_SIZE);
-      await dispatchPubSubEvent(payloadCreators.DAILY_GAME_UPDATE(batch));
+      await dispatchPubSubEvent(payloadCreators.DAILY_GAME_UPDATE({
+        games: batch,
+      }));
     }
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
@@ -85,16 +87,16 @@ export const doDailyGameUpdate = pubsubHandler(
     const logger = getLogger();
     logger.info("dailyGameUpdate: begin", {body});
     let processingCount = 0;
-    while (body.length) {
+    while (body.games.length) {
       logger.info("dailyGameUpdate: processing", {
         processingCount,
-        remaining: body.length,
+        remaining: body.games.length,
       });
-      const toProcess = body.shift();
+      const toProcess = body.games.shift();
       if (processingCount >= BATCH_SIZE || !toProcess) {
         logger.debug("dailyGameUpdate: waiting tick", {
           processingCount,
-          remaining: body.length,
+          remaining: body.games.length,
           toProcess: toProcess || "none",
         });
         await new Promise((resolve) => setTimeout(resolve, 2500));
@@ -176,10 +178,12 @@ export const doDailyGameUpdate = pubsubHandler(
     }
     return;
   }, {
-    bodySchema: z.array(z.object({
-      gameSqlId: z.string(),
-      gameFirestoreId: z.string(),
-    })),
+    bodySchema: z.object({
+      games: z.array(z.object({
+        gameSqlId: z.string(),
+        gameFirestoreId: z.string(),
+      })),
+    }),
     functionName: "doDailyGameUpdate",
     topic: TopicNames.DAILY_GAME_UPDATE,
     maxInstances: 15,

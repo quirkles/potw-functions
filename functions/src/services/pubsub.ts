@@ -31,9 +31,11 @@ export const payloadCreators = {
     topic: TopicNames.SEND_EMAIL,
   }),
   DAILY_GAME_UPDATE: (payload: {
-    gameSqlId: string;
-    gameFirestoreId: string;
-  }[]) => ({
+    games: {
+      gameSqlId: string;
+      gameFirestoreId: string;
+    }[]
+  }) => ({
     ...payload,
     action: "DAILY_GAME_UPDATE",
     topic: TopicNames.DAILY_GAME_UPDATE,
