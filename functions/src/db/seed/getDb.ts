@@ -3,14 +3,20 @@ import postgres from "postgres";
 
 import {mask} from "../../services/utils/string";
 import * as game from "../schema/game";
+import * as gameWeeks from "../schema/gameWeek";
 import * as gamesToUsers from "../schema/gamesToUsers";
+import * as pick from "../schema/picks";
 import * as users from "../schema/user";
+import * as vote from "../schema/votes";
 
 const config = {
   schema: {
     ...users,
     ...game,
     ...gamesToUsers,
+    ...gameWeeks,
+    ...pick,
+    ...vote,
   },
 } as const;
 

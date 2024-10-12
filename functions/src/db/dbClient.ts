@@ -11,26 +11,32 @@ import * as pick from "./schema/picks";
 import * as users from "./schema/user";
 import * as vote from "./schema/votes";
 
-let db: ReturnType<typeof drizzle> | undefined;
+const dbConfig = {
+  schema: {
+    ...users,
+    ...game,
+    ...gamesToUsers,
+    ...gameWeeks,
+    ...pick,
+    ...vote,
+  },
+};
 
-export const getDb = () => {
-  if (db) {
-    return db;
-  }
+let singleton: ReturnType<typeof initDb>;
+
+const initDb = () => {
   const {sqlDatabase} = getConfig();
   const {host, port, user, password, dbName} = sqlDatabase;
   const queryClient = postgres(`postgres://${user}:${password}@${host}:${port}/${dbName}`);
   console.log(`Connection string: postgres://${user}:${mask(password)}@${mask(host)}:${port}/${dbName}`);
-  db = drizzle(queryClient, {
-    schema: {
-      ...users,
-      ...game,
-      ...gamesToUsers,
-      ...gameWeeks,
-      ...pick,
-      ...vote,
-    }});
-  return db;
+  return drizzle(queryClient, dbConfig);
+};
+
+export const getDb = () => {
+  if (!singleton) {
+    singleton = initDb();
+  }
+  return singleton;
 };
 
 
