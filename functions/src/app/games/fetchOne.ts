@@ -1,4 +1,4 @@
-import {eq} from "drizzle-orm";
+import {desc, eq} from "drizzle-orm";
 import {alias} from "drizzle-orm/pg-core";
 import {z} from "zod";
 
@@ -21,12 +21,21 @@ export const fetchOne = httpHandler(async ({query}) => {
     query: query || "none",
   });
   const admin = alias(users, "admin");
+
+  const gameWeeksSubQuery = db.select()
+    .from(gameWeeks)
+    .where(eq(gameWeeks.gameId, query.gameId))
+    .limit(10)
+    .orderBy(desc(gameWeeks.startDateTime))
+    .as("gameWeeksSubQuery");
+
+
   const result = await db.select()
     .from(games)
     .leftJoin(gamesToUsers, eq(gamesToUsers.gameId, games.id))
     .leftJoin(users, eq(gamesToUsers.userId, users.id))
     .leftJoin(admin, eq(games.adminId, admin.id))
-    .leftJoin(gameWeeks, eq(gameWeeks.gameId, games.id))
+    .leftJoin(gameWeeksSubQuery, eq(gameWeeksSubQuery.gameId, games.id))
     .where(
       eq(games.id, query.gameId),
     );
@@ -79,7 +88,7 @@ function resultsToGames(results: {
     games: SelectGame | null
     games_to_users: { userId: string, gameId: string } | null,
     admin: SelectUser | null
-    game_weeks: SelectGameWeek | null
+    gameWeeksSubQuery: SelectGameWeek | null
 }[]):Game[] {
   const logger = getLogger();
   logger.info("resultsToGames: begin", {
@@ -144,22 +153,22 @@ function resultsToGames(results: {
           });
         }
       }
-      if (result.game_weeks) {
-        const existingGameWeek = gameWeeksMap.get(result.game_weeks.id);
+      if (result.gameWeeksSubQuery) {
+        const existingGameWeek = gameWeeksMap.get(result.gameWeeksSubQuery.id);
         if (!existingGameWeek) {
           const parsedGameWeekResult = gameWeekSchema.safeParse({
-            ...result.game_weeks,
-            sqlId: result.game_weeks.id,
+            ...result.gameWeeksSubQuery,
+            sqlId: result.gameWeeksSubQuery.id,
             gameSqlId: result.games.id,
           });
           if (!parsedGameWeekResult.success) {
             logger.error("resultsToGames: failed to parse game week", {
-              gameWeekData: result.game_weeks,
+              gameWeekData: result.gameWeeksSubQuery,
               err: parsedGameWeekResult.error,
             });
             continue;
           }
-          gameWeeksMap.set(result.game_weeks.id, parsedGameWeekResult.data);
+          gameWeeksMap.set(result.gameWeeksSubQuery.id, parsedGameWeekResult.data);
         }
       }
     }
