@@ -7,6 +7,7 @@ export const gameWeekSchema = z.object({
   meetingLink: z.string().nullable(),
 
   gameSqlId: z.string(),
+  status: z.enum(["complete", "overdue", "pending", "current"]),
 });
 
 export type GameWeek = z.infer<typeof gameWeekSchema>;
