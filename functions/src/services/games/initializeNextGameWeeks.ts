@@ -111,7 +111,9 @@ export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: 
 
   return results.map((result) => ({
     sqlId: result.insertedId,
+    firestoreId: result.firestoreId,
     startDateTime: result.startDateTime,
+    status: "pending",
     theme: null,
     meetingLink: null,
     gameSqlId: gameId,

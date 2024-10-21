@@ -10,7 +10,7 @@ import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {initializeAppAdmin} from "../../services/firebase";
 import {getFirestore} from "../../services/firestore/firestore";
 import {getIdFromSqlId} from "../../services/firestore/user";
-import {initializeGameWeeksForGame} from "../../services/games/intializeNextGameWeeks";
+import {initializeGameWeeksForGame} from "../../services/games/initializeNextGameWeeks";
 import {inviteUsers} from "../../services/users/inviteUsers";
 import {ServerError} from "../../utils/Errors";
 import {gameSchema, PeriodString} from "../../validation/game";

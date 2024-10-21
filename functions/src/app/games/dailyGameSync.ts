@@ -11,7 +11,7 @@ import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {pubsubHandler} from "../../functionWrapper/pubsubfunctionWrapper";
 import {onScheduleHandler} from "../../functionWrapper/schedulefunctionWrapper";
 import {getFirestore} from "../../services/firestore/firestore";
-import {initializeGameWeeksForGame} from "../../services/games/intializeNextGameWeeks";
+import {initializeGameWeeksForGame} from "../../services/games/initializeNextGameWeeks";
 import {dispatchPubSubEvent, payloadCreators, TopicNames} from "../../services/pubsub";
 import {calculateNextGameWeekStartDate} from "../../utils/dates";
 
