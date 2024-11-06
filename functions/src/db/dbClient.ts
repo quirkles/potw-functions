@@ -28,7 +28,7 @@ const initDb = () => {
   const {sqlDatabase} = getConfig();
   const {host, port, user, password, dbName} = sqlDatabase;
   const queryClient = postgres(`postgres://${user}:${password}@${host}:${port}/${dbName}`);
-  console.log(`Connection string: postgres://${user}:${mask(password)}@${mask(host)}:${port}/${dbName}`);
+  console.log(`Connection string: postgres://${user}:${mask(password)}@${host}:${port}/${dbName}`);
   return drizzle(queryClient, dbConfig);
 };
 

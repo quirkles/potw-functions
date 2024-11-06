@@ -13,8 +13,8 @@ import {getIdFromSqlId} from "../../services/firestore/user";
 import {initializeGameWeeksForGame} from "../../services/games/initializeNextGameWeeks";
 import {inviteUsers} from "../../services/users/inviteUsers";
 import {ServerError} from "../../utils/Errors";
-import {gameSchema, PeriodString} from "../../validation/game";
-import {User, userSchema} from "../../validation/user";
+import {sqlGameSchema, PeriodString} from "../../validation/sqlGame";
+import {SqlUser, sqlUserSchema} from "../../validation/sqlUser";
 
 import {createGamePayloadSchema} from "./schemas";
 import {periodToPeriodString} from "./transforms";
@@ -31,14 +31,14 @@ export const createGame = httpHandler(async ({
   let newGameId: string | null = null;
   let newGameCreatedAt: string | null = null;
   let newGameUpdatedAt: string | null = null;
-  let admin: User | null = null;
+  let admin: SqlUser | null = null;
   const periodString: PeriodString = periodToPeriodString(body.period);
 
   const existingUserIds: string[] = [];
   const usersToInvite: string[] = [];
 
-  let existingUsers: User[] = [];
-  let invitedUsers: User[] = [];
+  let existingUsers: SqlUser[] = [];
+  let invitedUsers: SqlUser[] = [];
 
   for (const player of body.players) {
     if (player.firestoreId) {
@@ -101,7 +101,7 @@ export const createGame = httpHandler(async ({
     existingUsers = existingUserIds.length ? await tx.select().from(users).where(inArray(
       users.firestoreId,
       existingUserIds,
-    )).then((results) => results.map((result) => userSchema.parse({
+    )).then((results) => results.map((result) => sqlUserSchema.parse({
       ...result,
       sqlId: result.id,
     }))).catch((err) => {
@@ -190,5 +190,7 @@ export const createGame = httpHandler(async ({
   };
 }, {
   bodySchema: createGamePayloadSchema,
-  responseSchema: gameSchema,
+  responseSchema: sqlGameSchema,
+  vpcConnector: "psql-connector",
+  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });

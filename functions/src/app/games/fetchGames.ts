@@ -4,7 +4,7 @@ import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {fetchManyGames} from "../../services/games/fetchManyGames";
 import {fetchGamesForUser} from "../../services/users/fetchGamesForUser";
-import {Game} from "../../validation/game";
+import {SqlGame} from "../../validation/sqlGame";
 import {gameWithRelationsSchema} from "../../validation/withRelations";
 
 export const fetchGames = httpHandler(async ({
@@ -15,7 +15,7 @@ export const fetchGames = httpHandler(async ({
 
   const userId = query.userId;
 
-  let games: Game[];
+  let games: SqlGame[];
 
   if (userId) {
     games = await fetchGamesForUser(userId as string);
@@ -44,4 +44,6 @@ export const fetchGames = httpHandler(async ({
   responseSchema: z.object({
     games: z.array(gameWithRelationsSchema),
   }),
+  vpcConnector: "psql-connector",
+  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });

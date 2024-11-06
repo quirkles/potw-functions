@@ -9,7 +9,7 @@ import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {HttpHandlerFunction} from "../../functionWrapper/types";
 import {createLogger} from "../../services/Logger/Logger.pino";
 import {NotFoundError} from "../../utils/Errors";
-import {userSchema} from "../../validation/user";
+import {sqlUserSchema} from "../../validation/sqlUser";
 
 const querySchema = z.object({
   id: z.string(),
@@ -21,7 +21,7 @@ const anySchema = z.any();
 const handler: HttpHandlerFunction<
     typeof anySchema,
     typeof querySchema,
-    typeof userSchema,
+    typeof sqlUserSchema,
     false
 > = async ({query, headers}) => {
   const logger =createLogger({
@@ -97,6 +97,8 @@ const handler: HttpHandlerFunction<
 
 export const fetchUserById = httpHandler(handler, {
   querySchema: querySchema,
-  responseSchema: userSchema,
+  responseSchema: sqlUserSchema,
   useAppCheck: true,
+  vpcConnector: "psql-connector",
+  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });

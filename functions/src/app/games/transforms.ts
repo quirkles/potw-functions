@@ -1,4 +1,4 @@
-import {Period, PeriodString} from "../../validation/game";
+import {Period, PeriodString} from "../../validation/sqlGame";
 
 
 export const periodStringToPeriod = (periodString: PeriodString): Period => {

@@ -7,6 +7,7 @@ const {
   user,
   game,
   gameWeeks,
+  documentListeners,
 } = appFunctions;
 
 const {
@@ -19,6 +20,7 @@ export const app = {
   user,
   game: appGameFunctions,
   gameWeeks,
+  documentListeners,
 };
 
 export const dev = {
@@ -32,6 +34,7 @@ const {
   testResponse,
   testLogger,
   testResponseAndBody,
+  pingDb,
 } = testFunctions;
 
 export const test = {
@@ -39,4 +42,5 @@ export const test = {
   response: testResponse,
   logger: testLogger,
   responseAndBody: testResponseAndBody,
+  ping: pingDb,
 };

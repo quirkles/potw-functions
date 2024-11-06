@@ -1,7 +1,7 @@
 import {SelectGame} from "../../db/schema/game";
-import {Game} from "../../validation/game";
+import {SqlGame} from "../../validation/sqlGame";
 
-export function selectGameToGame(game: SelectGame): Game {
+export function selectGameToGame(game: SelectGame): SqlGame {
   return {
     sqlId: game.id,
     firestoreId: game.firestoreId,

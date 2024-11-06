@@ -9,9 +9,9 @@ import {gamesToUsers} from "../../db/schema/gamesToUsers";
 import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
-import {Game, gameSchema} from "../../validation/game";
 import {GameWeek, gameWeekSchema} from "../../validation/gameWeek";
-import {User, userSchema} from "../../validation/user";
+import {SqlGame, sqlGameSchema} from "../../validation/sqlGame";
+import {SqlUser, sqlUserSchema} from "../../validation/sqlUser";
 import {gameWithRelationsSchema} from "../../validation/withRelations";
 
 export const fetchOne = httpHandler(async ({query}) => {
@@ -74,13 +74,15 @@ export const fetchOne = httpHandler(async ({query}) => {
   }
 
   return {
-    response: gamesFromResults[0] as Game,
+    response: gamesFromResults[0] as SqlGame,
   };
 }, {
   querySchema: z.object({
     gameId: z.string(),
   }),
   responseSchema: gameWithRelationsSchema,
+  vpcConnector: "psql-connector",
+  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });
 
 function resultsToGames(results: {
@@ -89,22 +91,22 @@ function resultsToGames(results: {
     games_to_users: { userId: string, gameId: string } | null,
     admin: SelectUser | null
     gameWeeksSubQuery: SelectGameWeek | null
-}[]):Game[] {
+}[]):SqlGame[] {
   const logger = getLogger();
   logger.info("resultsToGames: begin", {
     results: results || "none",
   });
-  const gamesMap = new Map<string, Game>();
-  const usersMap = new Map<string, User & {gameId: string}>();
+  const gamesMap = new Map<string, SqlGame>();
+  const usersMap = new Map<string, SqlUser & {gameId: string}>();
   const gameWeeksMap = new Map<string, GameWeek>();
-  let admin: User | null = null;
+  let admin: SqlUser | null = null;
 
   for (const result of results) {
     logger.info("resultsToGames: processing result", {
       result,
     });
     if (result.games && result.admin) {
-      admin = userSchema.parse({
+      admin = sqlUserSchema.parse({
         sqlId: result.admin.id,
         ...result.admin,
       });
@@ -116,7 +118,7 @@ function resultsToGames(results: {
           sqlId: result.games.id,
           period: result.games.period,
         };
-        const parsedGameResult = gameSchema.safeParse(gameData);
+        const parsedGameResult = sqlGameSchema.safeParse(gameData);
         if (!parsedGameResult.success) {
           logger.error("resultsToGames: failed to parse game", {
             gameData,
@@ -139,7 +141,7 @@ function resultsToGames(results: {
             createdAt: result.users.createdAt,
             updatedAt: result.users.updatedAt || null,
           };
-          const parsedUserResult = userSchema.safeParse(userData);
+          const parsedUserResult = sqlUserSchema.safeParse(userData);
           if (!parsedUserResult.success) {
             logger.error("resultsToGames: failed to parse user", {
               userData,

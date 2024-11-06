@@ -1,7 +1,7 @@
 import {z} from "zod";
 
 import {timeStringSchema} from "../../utils/dates";
-import {periodSchema} from "../../validation/game";
+import {periodSchema} from "../../validation/sqlGame";
 
 
 export const createGamePayloadSchema = z.object({

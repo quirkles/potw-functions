@@ -5,7 +5,7 @@ import {getDb} from "../../db/dbClient";
 import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {NotFoundError} from "../../utils/Errors";
-import {Game} from "../../validation/game";
+import {SqlGame} from "../../validation/sqlGame";
 import {GameWithRelations} from "../../validation/withRelations";
 
 
@@ -95,7 +95,7 @@ export async function fetchGamesForUser(userId: string): Promise<GameWithRelatio
       acc[game.sqlId] = game;
     }
     return acc;
-  }, {} as Record<string, Game>);
+  }, {} as Record<string, SqlGame>);
 
   logger.info("fetchGames success", {
     games: Object.values(allGames)

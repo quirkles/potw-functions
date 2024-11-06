@@ -8,9 +8,9 @@ import {picks, SelectPick} from "../../db/schema/picks";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {NotFoundError} from "../../utils/Errors";
-import {Game} from "../../validation/game";
 import {GameWeek} from "../../validation/gameWeek";
 import {Pick} from "../../validation/pick";
+import {SqlGame} from "../../validation/sqlGame";
 import {
   GameWeekWithRelations,
   gameWeekWithRelationsSchema,
@@ -50,6 +50,8 @@ export const fetchOne = httpHandler(async ({query}) => {
     gameWeekId: z.string(),
   }),
   responseSchema: gameWeekWithRelationsSchema,
+  vpcConnector: "psql-connector",
+  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });
 
 function processResults(results: {
@@ -58,7 +60,7 @@ function processResults(results: {
   picks: SelectPick | null
 }[]): GameWeekWithRelations {
   let gameWeek: Partial<GameWeek> = {};
-  let game: Partial<Game> = {};
+  let game: Partial<SqlGame> = {};
   const picks: Partial<Pick>[] = [];
 
   for (const result of results) {

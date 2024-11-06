@@ -5,7 +5,7 @@ import {users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {UnauthorizedError} from "../../utils/Errors";
-import {userUpdateSchema} from "../../validation/user";
+import {userUpdateSchema} from "../../validation/sqlUser";
 
 export const updateUserRequest = httpHandler(async ({
   body,
@@ -36,4 +36,6 @@ export const updateUserRequest = httpHandler(async ({
   requireAuthToken: true,
   bodySchema: userUpdateSchema,
   responseSchema: userUpdateSchema,
+  vpcConnector: "psql-connector",
+  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });

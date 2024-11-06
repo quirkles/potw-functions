@@ -1,3 +1,4 @@
+import {DocumentOptions} from "firebase-functions/lib/v2/providers/firestore";
 import {HttpsOptions} from "firebase-functions/v2/https";
 import {PubSubOptions} from "firebase-functions/v2/pubsub";
 import {TypeOf, ZodSchema} from "zod";
@@ -62,6 +63,24 @@ export type PubSubHandlerFunction<
 > = (
     payload: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown,
 ) => unknown | Promise<unknown>;
+
+export type OnDocumentCreatedHandlerFunction<
+    NewDocumentSchema extends ZodSchema | undefined,
+    ParamsSchema extends ZodSchema | undefined,
+> = (
+    payload: NewDocumentSchema extends ZodSchema ? TypeOf<NewDocumentSchema> : unknown,
+    params: ParamsSchema extends ZodSchema ? TypeOf<ParamsSchema> : unknown,
+) => unknown | Promise<unknown>;
+
+export type OnDocumentCreatedHandlerFunctionConfig<
+    NewDocumentSchema extends ZodSchema | undefined,
+    ParamsSchema extends ZodSchema | undefined,
+    Document extends string
+> = DocumentOptions<Document> & {
+    newDocumentSchema?: NewDocumentSchema,
+    paramsSchema?: ParamsSchema,
+    functionName?: string,
+}
 
 type OKStatusCodes = 200 | 201 | 204;
 type ErrorStatusCodes =

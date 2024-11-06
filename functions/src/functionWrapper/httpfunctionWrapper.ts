@@ -31,10 +31,12 @@ export function httpHandler<
     responseSchema,
     useAppCheck = false,
     functionName,
+    ...rest
   } = config || {};
   return onRequest({
     cors: config?.cors || true,
     invoker: "public",
+    ...rest,
   }, async (req, res) => {
     const logLabels: Record<string, string> = {
       requestId: v4(),
