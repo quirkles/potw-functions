@@ -3,6 +3,7 @@ import {eq} from "drizzle-orm";
 import {getDb} from "../../db/dbClient";
 import {games, SelectGame} from "../../db/schema/game";
 import {SelectUser, users} from "../../db/schema/user";
+import {getLogger} from "../../functionWrapper";
 import {selectGameToSqlGame, SqlGame} from "../../validation/sqlGame";
 import {selectUserToSqlUser, SqlUser} from "../../validation/sqlUser";
 
@@ -46,9 +47,14 @@ function transformJoinResult(result: {
     games: SelectGame,
     users: SelectUser | null
 }[]): GameWithAdmin {
+  const logger = getLogger();
+  logger.info("fetchGameWithAdmin: begin");
   let game: SelectGame | null = null;
   let admin: SelectUser | null = null;
   for (const row of result) {
+    logger.info("fetchGameWithAdmin: row", {
+      rowData: row,
+    });
     if (game === null) {
       game = row.games;
     }
@@ -62,6 +68,10 @@ function transformJoinResult(result: {
   if (admin === null) {
     throw new Error("Admin not found");
   }
+  logger.info("fetchGameWithAdmin: complete", {
+    game,
+    admin,
+  });
   return {
     game: selectGameToSqlGame(game),
     admin: selectUserToSqlUser(admin),
