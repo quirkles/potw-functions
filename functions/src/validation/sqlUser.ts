@@ -29,11 +29,13 @@ export type UserUpdate = z.infer<typeof userUpdateSchema>;
 export function selectUserToSqlUser(selectUser: SelectUser): SqlUser {
   return sqlUserSchema.parse({
     sqlId: selectUser.id,
-    email: selectUser.email,
     firestoreId: selectUser.firestoreId,
+
+    email: selectUser.email,
     username: selectUser.username,
     aboutMe: selectUser.aboutMe,
     avatarUrl: selectUser.avatarUrl,
+
     createdAt: selectUser.createdAt,
     updatedAt: selectUser.updatedAt,
   });

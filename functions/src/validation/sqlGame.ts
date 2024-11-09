@@ -76,6 +76,8 @@ export type SqlGame = z.infer<typeof sqlGameSchema>;
 export function selectGameToSqlGame(selectGame: SelectGame): SqlGame {
   return sqlGameSchema.parse({
     sqlId: selectGame.id,
+    firestoreId: selectGame.firestoreId,
+
     name: selectGame.name,
     description: selectGame.description,
     startDate: selectGame.startDate,
@@ -84,6 +86,7 @@ export function selectGameToSqlGame(selectGame: SelectGame): SqlGame {
     period: selectGame.period,
     isPrivate: selectGame.isPrivate,
     adminSqlId: selectGame.adminId,
+
     createdAt: selectGame.createdAt,
     updatedAt: selectGame.updatedAt,
   });
