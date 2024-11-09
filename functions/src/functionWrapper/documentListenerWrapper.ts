@@ -29,11 +29,11 @@ export function documentCreateListenerHandler<
     newDocumentSchema = z.any().optional(),
     paramsSchema = z.any().optional(),
     functionName,
-    ...rest
+    ...restConfig
   } = config;
   return onDocumentCreated({
     document,
-    ...rest,
+    ...restConfig,
   }, async (event) => {
     const snapshot = event.data ?? null;
     if (!snapshot) {
@@ -75,7 +75,6 @@ export function documentCreateListenerHandler<
       }
       logger.warn("Invalid document data", {
         error: errorMessage,
-        rest,
       });
       throw new BadRequestError("Invalid document data");
     }
@@ -92,7 +91,6 @@ export function documentCreateListenerHandler<
       }
       logger.warn("Invalid params", {
         error: errorMessage,
-        rest,
       });
       throw new BadRequestError("Invalid params");
     }
@@ -108,7 +106,6 @@ export function documentCreateListenerHandler<
     } catch (e) {
       logger.error("Error in handler", {
         err: e,
-        rest,
       });
       return;
     }

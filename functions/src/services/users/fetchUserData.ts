@@ -70,7 +70,11 @@ export async function fetchSqlUserData(args: {firestoreId: string} | {sqlId: str
       logger.info("fetchSqlUserData: fetched user data", {
         data: doc,
       });
-      return sqlUserSchema.parse(doc);
+      const {id, ...rest} = doc;
+      return sqlUserSchema.parse({
+        sqlId: id,
+        ...rest,
+      });
     });
   }
   if ("sqlId" in args) {
