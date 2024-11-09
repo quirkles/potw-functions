@@ -51,7 +51,7 @@ export function documentCreateListenerHandler<
       }),
     };
     const logger = createLogger({
-      logName: `pubsubHandler.${functionName || func.name || "unknownFunction"}`,
+      logName: `documentSubHandler.${functionName || func.name || "unknownFunction"}`,
       shouldLogToConsole: getConfig().env === "local",
       labels: {
         ...logLabels,
