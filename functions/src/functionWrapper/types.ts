@@ -19,6 +19,7 @@ export type HttpHandlerFunctionConfig<
     useAppCheck?: boolean,
     requireAuthToken?: RequireAuthToken,
     functionName?: string,
+    rawHtmlResponse?: boolean,
 };
 
 export type HttpHandlerFunction<

@@ -1,5 +1,6 @@
 import * as appFunctions from "./app/functions";
 import * as testFunctions from "./test/functions";
+import {testEmail} from "./test/testEmail";
 
 
 const {
@@ -43,4 +44,5 @@ export const test = {
   logger: testLogger,
   responseAndBody: testResponseAndBody,
   ping: pingDb,
+  email: testEmail,
 };

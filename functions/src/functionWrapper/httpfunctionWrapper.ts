@@ -31,6 +31,7 @@ export function httpHandler<
     responseSchema,
     useAppCheck = false,
     functionName,
+    rawHtmlResponse,
     ...rest
   } = config || {};
   return onRequest({
@@ -206,7 +207,17 @@ export function httpHandler<
     try {
       if (!responseSchema) {
         logger.debug("No response schema provided, sending response as is");
+        if (rawHtmlResponse) {
+          console.log("###\nrawHtmlResponse\n###");
+          res.set("Content-Type", "text/html").status(statusCode).send(response);
+          return;
+        }
         res.status(statusCode).json(response);
+        return;
+      }
+      if (rawHtmlResponse) {
+        console.log("###\nrawHtmlResponse\n###");
+        res.set("Content-Type", "text/html").status(statusCode).send(response);
         return;
       }
       res.status(statusCode).json(
