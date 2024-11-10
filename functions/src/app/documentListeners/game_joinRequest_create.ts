@@ -3,14 +3,14 @@ import {z} from "zod";
 import {getLogger} from "../../functionWrapper";
 import {
   documentCreateListenerHandler,
-} from "../../functionWrapper/documentListenerWrapper";
+} from "../../functionWrapper/documentCreateListenerWrapper";
 import {sendRequestToJoinGame} from "../../services/email/requestToJoinGame";
 import {fetchGameWithAdmin} from "../../services/games/fetchGameWithAdmin";
 import {
   fetchSqlUserData,
 } from "../../services/users/fetchUserData";
 
-export const onGameJoinRequest = documentCreateListenerHandler(
+export const onGameJoinCreate = documentCreateListenerHandler(
   async (document, params) => {
     const logger = getLogger();
     logger.info("onGameJoinRequest: begin", {

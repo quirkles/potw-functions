@@ -82,6 +82,28 @@ export type OnDocumentCreatedHandlerFunctionConfig<
     functionName?: string,
 }
 
+export type OnDocumentUpdateHandlerFunction<
+    BeforeDocumentSchema extends ZodSchema | undefined,
+    AfterDocumentSchema extends ZodSchema | undefined,
+    ParamsSchema extends ZodSchema | undefined,
+> = (
+    before: BeforeDocumentSchema extends ZodSchema ? TypeOf<BeforeDocumentSchema> : unknown,
+    after: AfterDocumentSchema extends ZodSchema ? TypeOf<AfterDocumentSchema> : unknown,
+    params: ParamsSchema extends ZodSchema ? TypeOf<ParamsSchema> : unknown,
+) => unknown | Promise<unknown>;
+
+export type OnDocumentUpdateHandlerFunctionConfig<
+    BeforeDocumentSchema extends ZodSchema | undefined,
+    AfterDocumentSchema extends ZodSchema | undefined,
+    ParamsSchema extends ZodSchema | undefined,
+    Document extends string
+> = DocumentOptions<Document> & {
+    beforeDocumentSchema?: BeforeDocumentSchema,
+    afterDocumentSchema?: AfterDocumentSchema,
+    paramsSchema?: ParamsSchema,
+    functionName?: string,
+}
+
 type OKStatusCodes = 200 | 201 | 204;
 type ErrorStatusCodes =
     400 |

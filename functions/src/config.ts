@@ -12,6 +12,7 @@ const configSchema = z.object({
     dbName: z.string(),
     port: z.number(),
   }),
+  vpcConnector: z.string(),
 });
 
 export type Config = z.infer<typeof configSchema>;
@@ -29,6 +30,8 @@ const sqlDatabase = {
   password: defineString("SQL_DB_PASSWORD"),
   port: defineInt("SQL_DB_PORT"),
 };
+
+const vpcConnector = defineString("VPC_CONNECTOR");
 
 /**
  * This function retrieves the configuration object. If the configuration object is not yet defined,
@@ -51,9 +54,9 @@ export function getConfig(): Config {
       dbName: sqlDatabase.dbName.value(),
       port: sqlDatabase.port.value(),
     },
+    vpcConnector: vpcConnector.value(),
   };
 
   config = configSchema.parse(maybeConfig);
   return config;
 }
-
