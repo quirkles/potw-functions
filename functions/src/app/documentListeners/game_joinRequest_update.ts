@@ -15,8 +15,9 @@ export const onGameJoinUpdate = documentUpdateListenerHandler(
   async (_, after, params) => {
     const logger = getLogger();
     logger.info("onGameJoinUpdate: begin", {
-      document,
       params,
+      before: _,
+      after,
     });
     const {status} = after;
     if (status === "pending") {
