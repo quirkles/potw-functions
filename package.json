@@ -9,7 +9,8 @@
     "deploy:ping": "cp ./functions/.env.dev ./functions/.env && firebase deploy --only functions:test.ping && rm ./functions/.env",
     "migrations:generate": "drizzle-kit generate:pg",
     "migrations:run:local": "ts-node drizzle.migrate.ts",
-    "migrations:run:dev": "export ENV=dev && ts-node drizzle.migrate.ts"
+    "migrations:run:dev": "export ENV=dev && ts-node drizzle.migrate.ts",
+    "email:build": "mjml -r ./email/templates/*.mjml -o ./email/build/ && ls email/build | xargs -I {} mv email/build/{} email/build/{}.handlebars && cp ./email/build/*.html.handlebars functions/assets/templates"
   },
   "author": "quirkles",
   "license": "ISC",
@@ -27,6 +28,7 @@
     "eslint-plugin-import": "^2.29.1",
     "firebase-tools": "^13.11.2",
     "jest": "^29.7.0",
+    "mjml": "^4.15.3",
     "postgres": "^3.4.3",
     "ts-node": "^10.9.2"
   },

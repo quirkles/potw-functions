@@ -1,0 +1,31 @@
+<mjml>
+  <mj-body>
+    <mj-section background-color="#28A5C2">
+      <mj-column>
+        <mj-text  align="center" font-weight="bold" font-size="20px" color="#F9F9F3">
+          POTW
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#F9F9F3">
+      <mj-column>
+        <mj-text  align="center" font-size="16px" color="#000">
+          You've been invited to Pick of the Week!
+        </mj-text>
+        <mj-text  align="center" font-size="16px" color="#000">
+          {{ $invitorName }} has invited you to join their game: {{ $gameName }} in Pick of the Week.
+        </mj-text>
+        <mj-button href="{{ $inviteUrl }}" background-color="#28A5C2" color="#F9F9F3">
+          Get Started!
+        </mj-button>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#1CA075">
+      <mj-column>
+        <mj-text align="center">
+          <a color="#f9f9f3" href={{$websiteUrl}}>POTW home</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

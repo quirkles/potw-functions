@@ -1,0 +1,34 @@
+<mjml>
+  <mj-body>
+    <mj-section background-color="#28A5C2">
+      <mj-column>
+        <mj-text  align="center" font-weight="bold" font-size="20px" color="#F9F9F3">
+          POTW
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#F9F9F3">
+      <mj-column>
+        <mj-text  align="center" font-size="16px" color="#000">
+          New Request to join a game.
+        </mj-text>
+        <mj-text  align="center" font-size="16px" color="#000">
+          User <a href="{{ $requesteeProfileUrl }}">{{ $requesteeName }}</a> has requested to join your game <a href="{{ $gameUrl }}">{{$gameName}}</a>.
+        </mj-text>
+        <mj-text  align="center" font-size="16px" color="#000">
+          Visit the game page to approve or deny requests.
+        </mj-text>
+        <mj-button href="{{ $gameUrl }}" background-color="#28A5C2" color="#F9F9F3">
+          View game
+        </mj-button>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#1CA075">
+      <mj-column>
+        <mj-text align="center">
+          <a href={{$websiteUrl}}>home</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
