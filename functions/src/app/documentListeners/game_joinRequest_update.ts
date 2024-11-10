@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import {getConfig} from "../../config";
+import {VPC_CONNECTOR} from "../../config";
 import {getLogger} from "../../functionWrapper";
 import {
   documentUpdateListenerHandler,
@@ -52,6 +52,6 @@ export const onGameJoinUpdate = documentUpdateListenerHandler(
       requesteeId: z.string(),
     }),
     functionName: "onGameJoinRequest",
-    vpcConnector: getConfig().vpcConnector,
+    vpcConnector: VPC_CONNECTOR,
     vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
   });
