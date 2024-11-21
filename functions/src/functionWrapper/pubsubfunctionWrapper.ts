@@ -26,9 +26,11 @@ export function pubsubHandler<
   const {
     bodySchema = z.any().optional(),
     functionName,
+    loggerName,
+    ...rest
   } = config || {};
   return onMessagePublished({
-    topic: config.topic,
+    ...rest,
   }, async (payload) => {
     const logLabels: Record<string, string> = {
       requestId: v4(),
@@ -42,7 +44,7 @@ export function pubsubHandler<
     } = payload.data.message.json;
 
     const logger = createLogger({
-      logName: `pubsubHandler.${functionName || func.name || "unknownFunction"}`,
+      logName: loggerName || `pubsubHandler.${functionName || func.name || "unknownFunction"}`,
       shouldLogToConsole: getConfig().env === "local",
       labels: {
         ...logLabels,

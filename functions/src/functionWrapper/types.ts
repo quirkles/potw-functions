@@ -55,7 +55,6 @@ export type PubSubHandlerFunctionConfig<
     topic: TopicNames,
     bodySchema?: BodySchema,
     loggerName?: string,
-    useAppCheck?: boolean,
     functionName?: string,
 }
 
