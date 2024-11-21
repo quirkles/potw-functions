@@ -3,6 +3,7 @@ import {and, asc, eq} from "drizzle-orm";
 import {inArray} from "drizzle-orm/sql/expressions/conditions";
 import {z} from "zod";
 
+import {VPC_CONNECTOR} from "../../config";
 import {getDb} from "../../db/dbClient";
 import {games, SelectGame} from "../../db/schema/game";
 import {gameWeeks, SelectGameWeek} from "../../db/schema/gameWeek";
@@ -14,7 +15,6 @@ import {getFirestore} from "../../services/firestore/firestore";
 import {initializeGameWeeksForGame} from "../../services/games/initializeNextGameWeeks";
 import {dispatchPubSubEvent, payloadCreators, TopicNames} from "../../services/pubsub";
 import {calculateNextGameWeekStartDate} from "../../utils/dates";
-import { VPC_CONNECTOR } from "../../config";
 
 const BATCH_SIZE = 20;
 
