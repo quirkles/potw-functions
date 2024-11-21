@@ -1,4 +1,3 @@
-import {faker} from "@faker-js/faker";
 import {z} from "zod";
 
 import {getLogger} from "../functionWrapper";
@@ -27,18 +26,18 @@ function getFakePayload(template: TemplateName): TemplateParams[typeof template]
   switch (template) {
   case "invite":
     return {
-      inviteUrl: faker.internet.url(),
-      gameName: faker.lorem.words(),
-      invitorName: faker.person.fullName(),
-      websiteUrl: faker.internet.url(),
+      inviteUrl: "www.example.com",
+      gameName: "Pick of the Week: work",
+      invitorName: "Admin",
+      websiteUrl: "www.example.com",
     };
   case "joinRequestReceived":
     return {
-      requesteeProfileUrl: faker.internet.url(),
-      requesteeName: faker.person.fullName(),
-      gameName: faker.lorem.words(),
-      gameUrl: faker.internet.url(),
-      websiteUrl: faker.internet.url(),
+      requesteeProfileUrl: "www.example.com",
+      requesteeName: "John Doe",
+      gameName: "Pick of the Week: work",
+      gameUrl: "www.example.com/game",
+      websiteUrl: "www.example.com/website",
     };
   }
 }
