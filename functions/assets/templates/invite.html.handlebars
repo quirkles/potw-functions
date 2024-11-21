@@ -2,7 +2,7 @@
 <html lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 
 <head>
-  <title></title>
+  <title>POTW Invite</title>
   <!--[if !mso]><!-->
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <!--<![endif]-->
@@ -59,8 +59,10 @@
     <![endif]-->
   <!--[if !mso]><!-->
   <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Overpass%20Mono" rel="stylesheet" type="text/css">
   <style type="text/css">
     @import url(https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700);
+    @import url(https://fonts.googleapis.com/css?family=Overpass%20Mono);
 
   </style>
   <!--<![endif]-->
@@ -80,6 +82,21 @@
     }
 
   </style>
+  <style type="text/css">
+    a {
+      color: #f9f9f3;
+    }
+
+    a,
+    div {
+      font-family: 'Overpass Mono', monospace !important;
+    }
+
+    .footer-link {
+      color: #f9f9f3;
+    }
+
+  </style>
 </head>
 
 <body style="word-spacing:normal;">
@@ -96,7 +113,7 @@
                   <tbody>
                     <tr>
                       <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:20px;font-weight:bold;line-height:1;text-align:center;color:#F9F9F3;">POTW</div>
+                        <div style="font-family:Overpass Mono;font-size:20px;font-weight:bold;line-height:1;text-align:center;color:#F9F9F3;">Pick of the Week</div>
                       </td>
                     </tr>
                   </tbody>
@@ -125,7 +142,7 @@
                     </tr>
                     <tr>
                       <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;line-height:1;text-align:center;color:#000000;">{{ $invitor }} has invited you to join their game in Pick of the Week.</div>
+                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;line-height:1;text-align:center;color:#000000;">{{ invitorName }} has invited you to join their game: {{ gameName }} in Pick of the Week.</div>
                       </td>
                     </tr>
                     <tr>
@@ -134,7 +151,7 @@
                           <tbody>
                             <tr>
                               <td align="center" bgcolor="#28A5C2" role="presentation" style="border:none;border-radius:3px;cursor:auto;mso-padding-alt:10px 25px;background:#28A5C2;" valign="middle">
-                                <a href="{{ $inviteUrl }}" style="display:inline-block;background:#28A5C2;color:#F9F9F3;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;" target="_blank"> Get Started! </a>
+                                <a href="{{ inviteUrl }}" style="display:inline-block;background:#28A5C2;color:#ffffff;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;" target="_blank"> Get Started! </a>
                               </td>
                             </tr>
                           </tbody>
@@ -162,7 +179,7 @@
                   <tbody>
                     <tr>
                       <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:center;color:#000000;"><a color="#f9f9f3" href={{$websiteUrl}}>POTW home</a></div>
+                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;line-height:1;text-align:center;color:#000000;"><a color="#F9F9F3" href="{{ websiteUrl }}">Pick of the week home</a></div>
                       </td>
                     </tr>
                   </tbody>

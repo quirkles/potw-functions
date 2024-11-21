@@ -14,6 +14,7 @@ import {getFirestore} from "../../services/firestore/firestore";
 import {initializeGameWeeksForGame} from "../../services/games/initializeNextGameWeeks";
 import {dispatchPubSubEvent, payloadCreators, TopicNames} from "../../services/pubsub";
 import {calculateNextGameWeekStartDate} from "../../utils/dates";
+import { VPC_CONNECTOR } from "../../config";
 
 const BATCH_SIZE = 20;
 
@@ -188,7 +189,7 @@ export const doDailyGameUpdate = pubsubHandler(
     topic: TopicNames.DAILY_GAME_UPDATE,
     maxInstances: 15,
     retry: false,
-    vpcConnector: "psql-connector",
+    vpcConnector: VPC_CONNECTOR,
     vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
   });
 

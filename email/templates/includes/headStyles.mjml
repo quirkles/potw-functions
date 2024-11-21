@@ -1,0 +1,16 @@
+<mj-font name="Overpass Mono"
+         href="https://fonts.googleapis.com/css?family=Overpass%20Mono" />
+<mj-attributes>
+    <mj-text font-size="16px"/>
+</mj-attributes>
+<mj-style>
+    a{
+        color: #f9f9f3;
+    }
+    a,div {
+        font-family: 'Overpass Mono', monospace !important;
+    }
+    .footer-link {
+        color: #f9f9f3;
+    }
+</mj-style>

@@ -3,6 +3,8 @@ import path from "node:path";
 
 import Handlebars from "handlebars";
 
+import {getLogger} from "../../functionWrapper";
+
 export const TemplateName = {
   invite: "invite",
   joinRequestReceived: "joinRequestReceived",
@@ -38,6 +40,8 @@ const templates: Templates = Object.values(TemplateName).reduce(
 );
 
 export const renderTemplate = <T extends TemplateName>(template: T, params: TemplateParams[T]): string => {
+  const logger = getLogger();
+  logger.info("renderTemplate: call", {template, params});
   return templates[template](params);
 };
 

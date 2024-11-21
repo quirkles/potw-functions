@@ -11,6 +11,7 @@ export const testEmail = httpHandler(function testEmail(payload) {
   const {query} = payload;
   const template = query.template as TemplateName;
   const params = getFakePayload(template);
+  console.log("params", params);
   const rendered = renderTemplate(template, params);
   return {
     response: rendered,
