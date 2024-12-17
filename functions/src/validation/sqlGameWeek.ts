@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-export const gameWeekSchema = z.object({
+export const gameWeekSqlSchema = z.object({
   sqlId: z.string(),
   firestoreId: z.string(),
 
@@ -12,4 +12,4 @@ export const gameWeekSchema = z.object({
   status: z.enum(["complete", "overdue", "pending", "current"]),
 });
 
-export type GameWeek = z.infer<typeof gameWeekSchema>;
+export type SqlGameWeek = z.infer<typeof gameWeekSqlSchema>;

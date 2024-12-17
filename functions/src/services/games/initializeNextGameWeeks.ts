@@ -7,10 +7,10 @@ import {gameWeeks, SelectGameWeek} from "../../db/schema/gameWeek";
 import {getLogger} from "../../functionWrapper";
 import {NotFoundError} from "../../utils/Errors";
 import {calculateNextGameWeekStartDate} from "../../utils/dates";
-import {GameWeek} from "../../validation/gameWeek";
+import {SqlGameWeek} from "../../validation/sqlGameWeek";
 import {getFirestore} from "../firestore/firestore";
 
-export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: number): Promise<GameWeek[]> {
+export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: number): Promise<SqlGameWeek[]> {
   const logger = getLogger();
   logger.info("initializeGameWeeksForGame: begin", {
     gameId,

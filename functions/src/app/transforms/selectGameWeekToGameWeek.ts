@@ -1,7 +1,7 @@
 import {SelectGameWeek} from "../../db/schema/gameWeek";
-import {GameWeek} from "../../validation/gameWeek";
+import {SqlGameWeek} from "../../validation/sqlGameWeek";
 
-export function selectGameWeekToGameWeek(gameWeek: SelectGameWeek): GameWeek {
+export function selectGameWeekToGameWeek(gameWeek: SelectGameWeek): SqlGameWeek {
   return {
     gameSqlId: gameWeek.gameId,
     firestoreId: gameWeek.firestoreId,

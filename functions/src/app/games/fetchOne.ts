@@ -9,8 +9,8 @@ import {gamesToUsers} from "../../db/schema/gamesToUsers";
 import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
-import {GameWeek, gameWeekSchema} from "../../validation/gameWeek";
 import {SqlGame, sqlGameSchema} from "../../validation/sqlGame";
+import {SqlGameWeek, gameWeekSqlSchema} from "../../validation/sqlGameWeek";
 import {SqlUser, sqlUserSchema} from "../../validation/sqlUser";
 import {gameWithRelationsSchema} from "../../validation/withRelations";
 
@@ -98,7 +98,7 @@ function resultsToGames(results: {
   });
   const gamesMap = new Map<string, SqlGame>();
   const usersMap = new Map<string, SqlUser & {gameId: string}>();
-  const gameWeeksMap = new Map<string, GameWeek>();
+  const gameWeeksMap = new Map<string, SqlGameWeek>();
   let admin: SqlUser | null = null;
 
   for (const result of results) {
@@ -158,7 +158,7 @@ function resultsToGames(results: {
       if (result.gameWeeksSubQuery) {
         const existingGameWeek = gameWeeksMap.get(result.gameWeeksSubQuery.id);
         if (!existingGameWeek) {
-          const parsedGameWeekResult = gameWeekSchema.safeParse({
+          const parsedGameWeekResult = gameWeekSqlSchema.safeParse({
             ...result.gameWeeksSubQuery,
             sqlId: result.gameWeeksSubQuery.id,
             gameSqlId: result.games.id,

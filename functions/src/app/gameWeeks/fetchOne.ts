@@ -8,9 +8,9 @@ import {picks, SelectPick} from "../../db/schema/picks";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {NotFoundError} from "../../utils/Errors";
-import {GameWeek} from "../../validation/gameWeek";
 import {Pick} from "../../validation/pick";
 import {SqlGame} from "../../validation/sqlGame";
+import {SqlGameWeek} from "../../validation/sqlGameWeek";
 import {
   GameWeekWithRelations,
   gameWeekWithRelationsSchema,
@@ -59,7 +59,7 @@ function processResults(results: {
   game_weeks: SelectGameWeek | null,
   picks: SelectPick | null
 }[]): GameWeekWithRelations {
-  let gameWeek: Partial<GameWeek> = {};
+  let gameWeek: Partial<SqlGameWeek> = {};
   let game: Partial<SqlGame> = {};
   const picks: Partial<Pick>[] = [];
 
