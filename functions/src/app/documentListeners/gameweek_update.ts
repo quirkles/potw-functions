@@ -6,7 +6,7 @@ import {
 } from "../../functionWrapper/documentUpdateListenerWrapper";
 import {firebaseGameWeekSchema} from "../../validation/firebaseGameWeek";
 
-export const onGameJoinCreate = documentUpdateListenerHandler(
+export const onGameWeekUpdate = documentUpdateListenerHandler(
   async (
     before,
     after,
@@ -23,7 +23,7 @@ export const onGameJoinCreate = documentUpdateListenerHandler(
       return;
     }
   }, {
-    document: "gameweeks/{gameweekId}",
+    document: "gameWeeks/{gameWeekId}",
     beforeDocumentSchema: firebaseGameWeekSchema,
     afterDocumentSchema: firebaseGameWeekSchema,
     paramsSchema: z.object({
