@@ -1,5 +1,8 @@
+import {eq} from "drizzle-orm";
 import {z} from "zod";
 
+import {getDb} from "../../db/dbClient";
+import {gameWeeks} from "../../db/schema/gameWeek";
 import {getLogger} from "../../functionWrapper";
 import {
   documentUpdateListenerHandler,
@@ -27,7 +30,33 @@ export const onGameWeekUpdate = documentUpdateListenerHandler(
         afterTheme,
         params,
       });
-      return;
+      const {gameWeekId: firestoreGameWeekId} = params;
+
+      const db = getDb();
+
+      const update = await db.update(gameWeeks).set({
+        theme: afterTheme,
+      }).where(eq(gameWeeks.firestoreId, firestoreGameWeekId)).returning({
+        id: gameWeeks.id,
+      });
+
+      if (!update || !update.length) {
+        logger.warning("Update failed, no results");
+        throw new Error("Update failed");
+      }
+
+      if (update.length !== 1) {
+        logger.warning("Unexpected multiple update results", {
+          updateResults: update,
+        });
+        throw new Error("Unexpected multiple update results");
+      }
+
+
+      logger.info("Updated game week", {
+        sqlId: update[0].id,
+        firestoreId: firestoreGameWeekId,
+      });
     }
     logger.info("No action taken");
   }, {
