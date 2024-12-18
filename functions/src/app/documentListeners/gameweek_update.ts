@@ -22,7 +22,7 @@ export const onGameWeekUpdate = documentUpdateListenerHandler(
 
     if (
       (beforeThemePollStatus === "open" && afterThemePollStatus === "closed" && afterTheme) ||
-            (!beforeTheme && afterTheme && afterThemePollStatus === "closed")
+            ((beforeTheme !== afterTheme) && afterThemePollStatus === "closed")
     ) {
       logger.info("onGameJoinRequest: theme poll is closed. Updating", {
         beforeThemePollStatus,
@@ -57,6 +57,7 @@ export const onGameWeekUpdate = documentUpdateListenerHandler(
         sqlId: update[0].id,
         firestoreId: firestoreGameWeekId,
       });
+      return;
     }
     logger.info("No action taken");
   }, {
