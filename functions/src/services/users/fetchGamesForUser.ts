@@ -1,3 +1,4 @@
+import {TSqlGame, TSqlGameWithRelations} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 
 import {selectUserToReturnUser} from "../../app/users/transform";
@@ -5,11 +6,9 @@ import {getDb} from "../../db/dbClient";
 import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {NotFoundError} from "../../utils/Errors";
-import {SqlGame} from "../../validation/sqlGame";
-import {GameWithRelations} from "../../validation/withRelations";
 
 
-export async function fetchGamesForUser(userId: string): Promise<GameWithRelations[]> {
+export async function fetchGamesForUser(userId: string): Promise<TSqlGameWithRelations[]> {
   const db = getDb();
   const logger = getLogger();
 
@@ -60,7 +59,7 @@ export async function fetchGamesForUser(userId: string): Promise<GameWithRelatio
   const allGames = (
     withGames.gamesAsParticipant
       .map(
-        (p): GameWithRelations => ({
+        (p): TSqlGameWithRelations => ({
           ...p.game,
           sqlId: p.game.id,
           adminSqlId: p.game.admin.id,
@@ -73,7 +72,7 @@ export async function fetchGamesForUser(userId: string): Promise<GameWithRelatio
         })
       )
       .concat(withGames.gamesAsAdmin.map(
-        (g): GameWithRelations => ({
+        (g): TSqlGameWithRelations => ({
           ...g,
           sqlId: g.id,
           players: g.players.map((player) => ({
@@ -95,7 +94,7 @@ export async function fetchGamesForUser(userId: string): Promise<GameWithRelatio
       acc[game.sqlId] = game;
     }
     return acc;
-  }, {} as Record<string, SqlGame>);
+  }, {} as Record<string, TSqlGame>);
 
   logger.info("fetchGames success", {
     games: Object.values(allGames)

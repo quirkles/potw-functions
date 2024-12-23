@@ -1,3 +1,12 @@
+import {
+  sqlGameSchema,
+  sqlGameWeekSchema,
+  sqlGameWithRelationsSchema,
+  sqlUserSchema,
+  TSqlGame,
+  TSqlGameWeek,
+  TSqlUser,
+} from "@potw/schemas";
 import {desc, eq} from "drizzle-orm";
 import {alias} from "drizzle-orm/pg-core";
 import {z} from "zod";
@@ -9,10 +18,6 @@ import {gamesToUsers} from "../../db/schema/gamesToUsers";
 import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
-import {SqlGame, sqlGameSchema} from "../../validation/sqlGame";
-import {SqlGameWeek, gameWeekSqlSchema} from "../../validation/sqlGameWeek";
-import {SqlUser, sqlUserSchema} from "../../validation/sqlUser";
-import {gameWithRelationsSchema} from "../../validation/withRelations";
 
 export const fetchOne = httpHandler(async ({query}) => {
   const logger = getLogger();
@@ -74,13 +79,13 @@ export const fetchOne = httpHandler(async ({query}) => {
   }
 
   return {
-    response: gamesFromResults[0] as SqlGame,
+    response: gamesFromResults[0] as TSqlGame,
   };
 }, {
   querySchema: z.object({
     gameId: z.string(),
   }),
-  responseSchema: gameWithRelationsSchema,
+  responseSchema: sqlGameWithRelationsSchema,
   vpcConnector: "psql-connector",
   vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });
@@ -91,15 +96,15 @@ function resultsToGames(results: {
     games_to_users: { userId: string, gameId: string } | null,
     admin: SelectUser | null
     gameWeeksSubQuery: SelectGameWeek | null
-}[]):SqlGame[] {
+}[]): TSqlGame[] {
   const logger = getLogger();
   logger.info("resultsToGames: begin", {
     results: results || "none",
   });
-  const gamesMap = new Map<string, SqlGame>();
-  const usersMap = new Map<string, SqlUser & {gameId: string}>();
-  const gameWeeksMap = new Map<string, SqlGameWeek>();
-  let admin: SqlUser | null = null;
+  const gamesMap = new Map<string, TSqlGame>();
+  const usersMap = new Map<string, TSqlUser & {gameId: string}>();
+  const gameWeeksMap = new Map<string, TSqlGameWeek>();
+  let admin: TSqlUser | null = null;
 
   for (const result of results) {
     logger.info("resultsToGames: processing result", {
@@ -158,7 +163,7 @@ function resultsToGames(results: {
       if (result.gameWeeksSubQuery) {
         const existingGameWeek = gameWeeksMap.get(result.gameWeeksSubQuery.id);
         if (!existingGameWeek) {
-          const parsedGameWeekResult = gameWeekSqlSchema.safeParse({
+          const parsedGameWeekResult = sqlGameWeekSchema.safeParse({
             ...result.gameWeeksSubQuery,
             sqlId: result.gameWeeksSubQuery.id,
             gameSqlId: result.games.id,
@@ -181,7 +186,7 @@ function resultsToGames(results: {
   return games.map((game) => {
     const players = users.filter((user) => user.gameId === game.sqlId);
     const gameWeeksForGame = gameWeeks.filter((gameWeek) => gameWeek.gameSqlId === game.sqlId);
-    return gameWithRelationsSchema.parse({
+    return sqlGameWithRelationsSchema.parse({
       ...game,
       players,
       gameWeeks: gameWeeksForGame,

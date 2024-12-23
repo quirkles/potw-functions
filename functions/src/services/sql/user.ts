@@ -1,12 +1,13 @@
+import {sqlUserSchema, TSqlUser} from "@potw/schemas";
+
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
-import {SqlUser, sqlUserSchema} from "../../validation/sqlUser";
 
 export async function saveOrCreate(user: {
   email: string,
   firestoreId: string,
-}): Promise<SqlUser> {
+}): Promise<TSqlUser> {
   const logger = getLogger();
   logger.info("saveOrCreate: begin", {
     user,

@@ -1,7 +1,7 @@
 import {SelectGame} from "../../db/schema/game";
 import {SqlGame} from "../../validation/sqlGame";
 
-export function selectGameToGame(game: SelectGame): SqlGame {
+export function selectGameToGame(game: SelectGame):TSqlGame {
   return {
     sqlId: game.id,
     firestoreId: game.firestoreId,

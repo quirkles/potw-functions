@@ -1,15 +1,16 @@
+import {TSqlGame, TSqlUser} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 
 import {getDb} from "../../db/dbClient";
 import {games, SelectGame} from "../../db/schema/game";
 import {SelectUser, users} from "../../db/schema/user";
+import {selectGameToSqlGame} from "../../db/transforms/game";
+import {selectUserToSqlUser} from "../../db/transforms/user";
 import {getLogger} from "../../functionWrapper";
-import {selectGameToSqlGame, SqlGame} from "../../validation/sqlGame";
-import {selectUserToSqlUser, SqlUser} from "../../validation/sqlUser";
 
 interface GameWithAdmin {
-    game: SqlGame,
-    admin: SqlUser
+    game: TSqlGame,
+    admin: TSqlUser
 }
 
 export async function fetchGameWithAdmin(args: {sqlId: string}): Promise<GameWithAdmin>

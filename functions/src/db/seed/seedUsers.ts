@@ -49,7 +49,7 @@ export async function seedUsers({
     return results;
   });
 
-  const firestoreIdToSqlUser: {
+  const firestoreIdToTSqlUser: {
     [firestoreId: string]: {
         sqlId: string,
         email: string
@@ -69,8 +69,8 @@ export async function seedUsers({
   const batch = firestore.batch();
   for (const ref of firestoreUserDocs) {
     batch.set(ref, {
-      sqlId: firestoreIdToSqlUser[ref.id].sqlId,
-      email: firestoreIdToSqlUser[ref.id].email,
+      sqlId: firestoreIdToTSqlUser[ref.id].sqlId,
+      email: firestoreIdToTSqlUser[ref.id].email,
       verified: true,
       createdAt: new Date(),
       updatedAt: new Date(),

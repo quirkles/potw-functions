@@ -1,3 +1,4 @@
+import {TSqlGameWithRelations} from "@potw/schemas";
 import {eq, isNotNull} from "drizzle-orm";
 
 import {selectUserToReturnUser} from "../../app/users/transform";
@@ -5,7 +6,6 @@ import {getDb} from "../../db/dbClient";
 import {games} from "../../db/schema/game";
 import {SelectUser} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
-import {GameWithRelations} from "../../validation/withRelations";
 
 
 export async function fetchManyGames({
@@ -14,7 +14,7 @@ export async function fetchManyGames({
 }: {
     limit: number;
     includePrivate: boolean;
-}): Promise<GameWithRelations[]> {
+}): Promise<TSqlGameWithRelations[]> {
   const db = getDb();
   const logger = getLogger();
 
@@ -37,7 +37,7 @@ export async function fetchManyGames({
 
   const allGames = (
     withGames.map(
-      (game): GameWithRelations => ({
+      (game): TSqlGameWithRelations => ({
         ...game,
         sqlId: game.id,
         firestoreId: game.firestoreId,
@@ -60,7 +60,7 @@ export async function fetchManyGames({
       acc[game.sqlId] = game;
     }
     return acc;
-  }, {} as Record<string, GameWithRelations>);
+  }, {} as Record<string, TSqlGameWithRelations>);
 
   logger.info("fetchGames success", {
     games: Object.values(allGames)

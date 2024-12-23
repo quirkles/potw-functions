@@ -1,18 +1,22 @@
+import {
+  firebaseUserSchema,
+  sqlUserSchema,
+  TFirebaseUser,
+  TSqlUser,
+} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
-import {FirebaseUser, firebaseUserSchema} from "../../validation/firebaseUser";
-import {SqlUser, sqlUserSchema} from "../../validation/sqlUser";
 import {getFirestore} from "../firestore/firestore";
 
 
-export async function fetchFirebaseUserData(args: {firestoreId: string}): Promise<FirebaseUser>
-export async function fetchFirebaseUserData(args: {sqlId: string}): Promise<FirebaseUser>
-export async function fetchFirebaseUserData(args: {firestoreId: string} | {sqlId: string}): Promise<FirebaseUser> {
+export async function fetchTFirebaseUserData(args: {firestoreId: string}): Promise<TFirebaseUser>
+export async function fetchTFirebaseUserData(args: {sqlId: string}): Promise<TFirebaseUser>
+export async function fetchTFirebaseUserData(args: {firestoreId: string} | {sqlId: string}): Promise<TFirebaseUser> {
   const logger = getLogger();
-  logger.info("fetchFirebaseUserData: begin", {
+  logger.info("fetchTFirebaseUserData: begin", {
     args,
   });
   if ("firestoreId" in args) {
@@ -25,7 +29,7 @@ export async function fetchFirebaseUserData(args: {firestoreId: string} | {sqlId
           throw new Error("User not found");
         }
         const docData = doc.data();
-        logger.info("fetchFirebaseUserData: fetched user data", {
+        logger.info("fetchTFirebaseUserData: fetched user data", {
           data: docData,
         });
         return firebaseUserSchema.parse(docData);
@@ -44,7 +48,7 @@ export async function fetchFirebaseUserData(args: {firestoreId: string} | {sqlId
           throw new Error("Multiple users found");
         }
         const docData = doc.docs[0].data();
-        logger.info("fetchFirebaseUserData: fetched user data", {
+        logger.info("fetchTFirebaseUserData: fetched user data", {
           data: docData,
         });
         return firebaseUserSchema.parse(docData);
@@ -53,11 +57,11 @@ export async function fetchFirebaseUserData(args: {firestoreId: string} | {sqlId
   throw new Error("Invalid arguments");
 }
 
-export async function fetchSqlUserData(args: {firestoreId: string}): Promise<SqlUser>
-export async function fetchSqlUserData(args: {sqlId: string}): Promise<SqlUser>
-export async function fetchSqlUserData(args: {firestoreId: string} | {sqlId: string}): Promise<SqlUser> {
+export async function fetchTSqlUserData(args: {firestoreId: string}): Promise<TSqlUser>
+export async function fetchTSqlUserData(args: {sqlId: string}): Promise<TSqlUser>
+export async function fetchTSqlUserData(args: {firestoreId: string} | {sqlId: string}): Promise<TSqlUser> {
   const logger = getLogger();
-  logger.info("fetchSqlUserData: begin", {
+  logger.info("fetchTSqlUserData: begin", {
     args,
   });
   if ("firestoreId" in args) {
@@ -67,7 +71,7 @@ export async function fetchSqlUserData(args: {firestoreId: string} | {sqlId: str
       if (!doc) {
         throw new Error("User not found");
       }
-      logger.info("fetchSqlUserData: fetched user data", {
+      logger.info("fetchTSqlUserData: fetched user data", {
         data: doc,
       });
       const {id, ...rest} = doc;
@@ -84,7 +88,7 @@ export async function fetchSqlUserData(args: {firestoreId: string} | {sqlId: str
       if (!doc) {
         throw new Error("User not found");
       }
-      logger.info("fetchSqlUserData: fetched user data", {
+      logger.info("fetchTSqlUserData: fetched user data", {
         data: doc,
       });
       return sqlUserSchema.parse(doc);

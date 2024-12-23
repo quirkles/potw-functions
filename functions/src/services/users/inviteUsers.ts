@@ -1,10 +1,11 @@
+import {sqlUserSchema, TSqlUser} from "@potw/schemas";
+
 import {getLogger} from "../../functionWrapper";
 import {isNotEmpty} from "../../utils/logic";
-import {SqlUser, sqlUserSchema} from "../../validation/sqlUser";
 import {inviteOrGetId} from "../firestore/user";
 import {saveOrCreate} from "../sql/user";
 
-export async function inviteUsers(emails: string[], invitor: string): Promise<SqlUser[]> {
+export async function inviteUsers(emails: string[], invitor: string): Promise<TSqlUser[]> {
   const logger = getLogger();
   logger.info("inviteUsers: begin", {
     emails: emails,

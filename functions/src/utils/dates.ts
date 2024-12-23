@@ -1,4 +1,9 @@
 import {
+  TPeriodString,
+  TPeriod,
+  transformPeriodStringToPeriod,
+} from "@potw/schemas";
+import {
   nextFriday,
   nextMonday, nextSaturday,
   nextSunday,
@@ -10,9 +15,7 @@ import {
 import {add} from "date-fns/add";
 import {z} from "zod";
 
-import {periodStringToPeriod} from "../app/games/transforms";
 import {getLogger} from "../functionWrapper";
-import {Period, PeriodString} from "../validation/sqlGame";
 
 export const timeStringRegex = /^([01][0-9]|2[0123]):[0-5][0-9]:00$/;
 export const timeStringSchema = z.string().regex(timeStringRegex);
@@ -95,17 +98,17 @@ export function stringAsDateString(dateStr?: string | null): DateString | null {
 export const calculateNextGameWeekStartDate = (
   game: {
       startDate: string;
-      period: PeriodString;
+      period: TPeriodString;
       regularScheduledStartTimeUtc: TimeString;
     },
   latestGameWeekStartDate: Date | null,
 ): Date => {
   const logger = getLogger();
-  const {startDate, period, regularScheduledStartTimeUtc} = game;
+  const {startDate, period: periodString, regularScheduledStartTimeUtc} = game;
 
   logger.info("calculateNextGameWeekStartDate: begin", {
     startDate,
-    period,
+    periodString,
     regularScheduledStartTimeUtc,
     latestGameWeekStartDate,
   });
@@ -132,12 +135,12 @@ export const calculateNextGameWeekStartDate = (
   });
 
   while (gameStartDate <= (latestGameWeekStartDate || new Date())) {
-    gameStartDate = incrementDateToNextPeriod(gameStartDate, periodStringToPeriod(period));
+    gameStartDate = incrementDateToNextPeriod(gameStartDate, transformPeriodStringToPeriod(periodString));
   }
   return gameStartDate;
 };
 
-function incrementDateToNextPeriod(date: Date, period: Period): Date {
+function incrementDateToNextPeriod(date: Date, period: TPeriod | TPeriodString): Date {
   if (typeof period === "string") {
     switch (period) {
     case "daily":
@@ -149,8 +152,7 @@ function incrementDateToNextPeriod(date: Date, period: Period): Date {
     case "monthly":
       return add(date, {months: 1});
     }
-  }
-  if ("quantity" in period) {
+  } else if ("quantity" in period) {
     switch (period.unit) {
     case "day":
       return add(date, {days: period.quantity});
@@ -159,8 +161,7 @@ function incrementDateToNextPeriod(date: Date, period: Period): Date {
     case "month":
       return add(date, {months: period.quantity});
     }
-  }
-  if ("recurrence" in period) {
+  } else if ("recurrence" in period) {
     const addWeek = period.recurrence === "everyOther" ? 1 : 0;
     switch (period.dayOfWeek) {
     case "sunday":

@@ -1,3 +1,4 @@
+import {TSqlGameWeek} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 import {gte} from "drizzle-orm/sql/expressions/conditions";
 
@@ -7,10 +8,9 @@ import {gameWeeks, SelectGameWeek} from "../../db/schema/gameWeek";
 import {getLogger} from "../../functionWrapper";
 import {NotFoundError} from "../../utils/Errors";
 import {calculateNextGameWeekStartDate} from "../../utils/dates";
-import {SqlGameWeek} from "../../validation/sqlGameWeek";
 import {getFirestore} from "../firestore/firestore";
 
-export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: number): Promise<SqlGameWeek[]> {
+export async function initializeGameWeeksForGame(gameId: string, weeksToCreate: number): Promise<TSqlGameWeek[]> {
   const logger = getLogger();
   logger.info("initializeGameWeeksForGame: begin", {
     gameId,

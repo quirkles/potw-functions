@@ -1,3 +1,4 @@
+import {sqlUserSchema} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 import {v4} from "uuid";
 import {z} from "zod";
@@ -9,7 +10,6 @@ import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {HttpHandlerFunction} from "../../functionWrapper/types";
 import {createLogger} from "../../services/Logger/Logger.pino";
 import {NotFoundError} from "../../utils/Errors";
-import {sqlUserSchema} from "../../validation/sqlUser";
 
 const querySchema = z.object({
   id: z.string(),

@@ -7,7 +7,7 @@ import {
 import {sendRequestToJoinGame} from "../../services/email/requestToJoinGame";
 import {fetchGameWithAdmin} from "../../services/games/fetchGameWithAdmin";
 import {
-  fetchSqlUserData,
+  fetchTSqlUserData,
 } from "../../services/users/fetchUserData";
 
 export const onGameJoinCreate = documentCreateListenerHandler(
@@ -26,7 +26,7 @@ export const onGameJoinCreate = documentCreateListenerHandler(
     }
     const {gameId, requesteeId} = params;
     logger.info("onGameJoinRequest: fetching user data for requestee");
-    const requestee = await fetchSqlUserData({firestoreId: requesteeId});
+    const requestee = await fetchTSqlUserData({firestoreId: requesteeId});
     logger.info("onGameJoinRequest: fetched user data for requestee", {
       requestee,
     });

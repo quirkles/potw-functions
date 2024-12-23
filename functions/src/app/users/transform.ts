@@ -1,7 +1,7 @@
 import {SelectUser} from "../../db/schema/user";
-import {SqlUser} from "../../validation/sqlUser";
+import {TSqlUser} from "../../validation/sqlUser";
 
-export function selectUserToReturnUser(user: SelectUser): SqlUser {
+export function selectUserToReturnUser(user: SelectUser): TSqlUser {
   return {
     sqlId: user.id,
     firestoreId: user.firestoreId,

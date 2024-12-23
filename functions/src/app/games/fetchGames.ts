@@ -15,7 +15,7 @@ export const fetchGames = httpHandler(async ({
 
   const userId = query.userId;
 
-  let games: SqlGame[];
+  let games:TSqlGame[];
 
   if (userId) {
     games = await fetchGamesForUser(userId as string);

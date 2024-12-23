@@ -1,3 +1,4 @@
+import {sqlUserSchema} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 
 import {getDb} from "../../db/dbClient";
@@ -5,7 +6,13 @@ import {users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {UnauthorizedError} from "../../utils/Errors";
-import {userUpdateSchema} from "../../validation/sqlUser";
+
+export const userUpdateSchema = sqlUserSchema.pick({
+  sqlId: true,
+  username: true,
+  aboutMe: true,
+  avatarUrl: true,
+}).partial();
 
 export const updateUserRequest = httpHandler(async ({
   body,

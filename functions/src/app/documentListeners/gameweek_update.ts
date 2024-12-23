@@ -1,3 +1,4 @@
+import {firebaseGameWeekSchema} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 import {z} from "zod";
 
@@ -7,7 +8,6 @@ import {getLogger} from "../../functionWrapper";
 import {
   documentUpdateListenerHandler,
 } from "../../functionWrapper/documentUpdateListenerWrapper";
-import {firebaseGameWeekSchema} from "../../validation/firebaseGameWeek";
 
 export const onGameWeekUpdate = documentUpdateListenerHandler(
   async (

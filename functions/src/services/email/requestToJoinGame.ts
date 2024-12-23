@@ -1,17 +1,16 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
+import {TSqlGame, TSqlUser} from "@potw/schemas";
 
 import {getConfig} from "../../config";
 import {getLogger} from "../../functionWrapper";
-import {SqlGame} from "../../validation/sqlGame";
-import {SqlUser} from "../../validation/sqlUser";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sg = require("@sendgrid/mail");
 
 export async function sendRequestToJoinGame(
   email: string,
-  requestee: SqlUser,
-  game: SqlGame
+  requestee: TSqlUser,
+  game:TSqlGame
 ): Promise<void> {
   const logger = getLogger();
   logger.info("sendInviteToEmail: begin", {
