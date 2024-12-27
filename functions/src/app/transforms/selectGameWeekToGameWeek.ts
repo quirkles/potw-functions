@@ -1,5 +1,6 @@
+import {TSqlGameWeek} from "@potw/schemas";
+
 import {SelectGameWeek} from "../../db/schema/gameWeek";
-import {SqlGameWeek} from "../../validation/sqlGameWeek";
 
 export function selectGameWeekToGameWeek(gameWeek: SelectGameWeek):TSqlGameWeek {
   return {

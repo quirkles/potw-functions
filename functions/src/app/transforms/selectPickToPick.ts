@@ -1,9 +1,11 @@
-import {SelectPick} from "../../db/schema/picks";
-import {Pick} from "../../validation/pick";
+import {TSqlPick} from "@potw/schemas";
 
-export function selectPickToPick(pick: SelectPick): Pick {
+import {SelectPick} from "../../db/schema/picks";
+
+export function selectPickToPick(pick: SelectPick): TSqlPick {
   return {
     sqlId: pick.id,
+    firestoreId: pick.firestoreId,
     gameWeekSqlId: pick.gameWeekId,
     userSqlId: pick.userId,
     createdAt: pick.createdAt,

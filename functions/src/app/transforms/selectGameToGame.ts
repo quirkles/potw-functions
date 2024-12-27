@@ -1,5 +1,6 @@
+import {TSqlGame} from "@potw/schemas";
+
 import {SelectGame} from "../../db/schema/game";
-import {SqlGame} from "../../validation/sqlGame";
 
 export function selectGameToGame(game: SelectGame):TSqlGame {
   return {

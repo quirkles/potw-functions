@@ -1,9 +1,9 @@
 import {
   sqlGameSchema,
   sqlUserSchema,
-  transformPeriodToPeriodString,
   TPeriodString,
-  TTSqlUser,
+  TSqlUser,
+  createGamePayloadSchema,
 } from "@potw/schemas";
 import {eq} from "drizzle-orm";
 import {inArray} from "drizzle-orm/sql/expressions/conditions";
@@ -21,8 +21,6 @@ import {initializeGameWeeksForGame} from "../../services/games/initializeNextGam
 import {inviteUsers} from "../../services/users/inviteUsers";
 import {ServerError} from "../../utils/Errors";
 
-import {createGamePayloadSchema} from "./schemas";
-
 export const createGame = httpHandler(async ({
   body,
 }) => {
@@ -35,14 +33,14 @@ export const createGame = httpHandler(async ({
   let newGameId: string | null = null;
   let newGameCreatedAt: string | null = null;
   let newGameUpdatedAt: string | null = null;
-  let admin: TTSqlUser | null = null;
-  const periodString: TPeriodString = transformPeriodToPeriodString(body.period);
+  let admin: TSqlUser | null = null;
+  const periodString: TPeriodString = body.period;
 
   const existingUserIds: string[] = [];
   const usersToInvite: string[] = [];
 
-  let existingUsers: TTSqlUser[] = [];
-  let invitedUsers: TTSqlUser[] = [];
+  let existingUsers: TSqlUser[] = [];
+  let invitedUsers: TSqlUser[] = [];
 
   for (const player of body.players) {
     if (player.firestoreId) {

@@ -1,5 +1,6 @@
+import {TSqlUser} from "@potw/schemas";
+
 import {SelectUser} from "../../db/schema/user";
-import {TSqlUser} from "../../validation/sqlUser";
 
 export function selectUserToReturnUser(user: SelectUser): TSqlUser {
   return {

@@ -1,3 +1,4 @@
+import {sqlVoteSchema, TSqlVote} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 import {z} from "zod";
 
@@ -9,7 +10,6 @@ import {SelectUser, users} from "../../db/schema/user";
 import {SelectVote, votes} from "../../db/schema/votes";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
-import {GameVote, gameVoteSchema} from "../../validation/gameVotes";
 
 export const fetchAllGameVotes = httpHandler(async ({query}) => {
   const logger = getLogger();
@@ -44,7 +44,7 @@ function processResults(results: {
     picks: SelectPick | null,
     votes: SelectVote | null
     users: SelectUser | null
-}[]): GameVote[] {
+}[]): TSqlVote[] {
   const logger = getLogger();
   return results.filter((result) => result.votes !== null).map((result) => {
     logger.info("processResults: result", {
@@ -63,7 +63,7 @@ function processResults(results: {
       userFirestoreId: result.users?.firestoreId as string,
     };
   }).filter((gameVote) => {
-    if (gameVoteSchema.safeParse(gameVote).success) {
+    if (sqlVoteSchema.safeParse(gameVote).success) {
       return true;
     }
     logger.error("Invalid gameVote", {gameVote});

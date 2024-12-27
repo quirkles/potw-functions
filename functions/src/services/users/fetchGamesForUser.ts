@@ -1,7 +1,7 @@
 import {TSqlGame, TSqlGameWithRelations} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 
-import {selectUserToReturnUser} from "../../app/users/transform";
+import {selectUserToReturnUser} from "../../app/transforms/selectUserToReturnUser";
 import {getDb} from "../../db/dbClient";
 import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";

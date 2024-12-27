@@ -1,3 +1,10 @@
+import {
+  sqlGameWeekWithRelationsSchema,
+  TSqlGame,
+  TSqlGameWeek,
+  TSqlGameWeekWithRelations,
+  TSqlPick,
+} from "@potw/schemas";
 import {eq} from "drizzle-orm";
 import {z} from "zod";
 
@@ -8,13 +15,6 @@ import {picks, SelectPick} from "../../db/schema/picks";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {NotFoundError} from "../../utils/Errors";
-import {Pick} from "../../validation/pick";
-import {SqlGame} from "../../validation/sqlGame";
-import {SqlGameWeek} from "../../validation/sqlGameWeek";
-import {
-  GameWeekWithRelations,
-  gameWeekWithRelationsSchema,
-} from "../../validation/withRelations";
 import {selectGameToGame} from "../transforms/selectGameToGame";
 import {selectGameWeekToGameWeek} from "../transforms/selectGameWeekToGameWeek";
 import {selectPickToPick} from "../transforms/selectPickToPick";
@@ -49,7 +49,7 @@ export const fetchOne = httpHandler(async ({query}) => {
   querySchema: z.object({
     gameWeekId: z.string(),
   }),
-  responseSchema: gameWeekWithRelationsSchema,
+  responseSchema: sqlGameWeekWithRelationsSchema,
   vpcConnector: "psql-connector",
   vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });
@@ -58,10 +58,10 @@ function processResults(results: {
   games: SelectGame | null,
   game_weeks: SelectGameWeek | null,
   picks: SelectPick | null
-}[]): GameWeekWithRelations {
-  let gameWeek: Partial<SqlGameWeek> = {};
-  let game: Partial<SqlGame> = {};
-  const picks: Partial<Pick>[] = [];
+}[]): TSqlGameWeekWithRelations {
+  let gameWeek: Partial<TSqlGameWeek> = {};
+  let game: Partial<TSqlGame> = {};
+  const picks: Partial<TSqlPick>[] = [];
 
   for (const result of results) {
     if (result.game_weeks) {
@@ -81,7 +81,7 @@ function processResults(results: {
     }
   }
 
-  return gameWeekWithRelationsSchema.parse({
+  return sqlGameWeekWithRelationsSchema.parse({
     ...gameWeek,
     game,
     picks,

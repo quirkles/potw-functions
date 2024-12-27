@@ -1,11 +1,10 @@
+import {sqlGameWithRelationsSchema, TSqlGame} from "@potw/schemas";
 import {z} from "zod";
 
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {fetchManyGames} from "../../services/games/fetchManyGames";
 import {fetchGamesForUser} from "../../services/users/fetchGamesForUser";
-import {SqlGame} from "../../validation/sqlGame";
-import {gameWithRelationsSchema} from "../../validation/withRelations";
 
 export const fetchGames = httpHandler(async ({
   query,
@@ -42,7 +41,7 @@ export const fetchGames = httpHandler(async ({
     userId: z.string().optional(),
   }),
   responseSchema: z.object({
-    games: z.array(gameWithRelationsSchema),
+    games: z.array(sqlGameWithRelationsSchema),
   }),
   vpcConnector: "psql-connector",
   vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
