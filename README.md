@@ -165,6 +165,14 @@ The project likely uses Firebase deployment pipelines. Additional CI/CD document
 
 ## Additional Resources
 
+### POTW WEB
+Repo that contains the web application.
+https://github.com/quirkles/potw-web
+
+### POTW PACKAGES
+Repo that contains shared code for the web and backend.
+https://github.com/quirkles/potw-packages
+
 - [Firebase Functions Documentation](https://firebase.google.com/docs/functions)
 - [Drizzle ORM Documentation](https://orm.drizzle.team/docs/overview)
 - [TypeScript Documentation](https://www.typescriptlang.org/docs/)
