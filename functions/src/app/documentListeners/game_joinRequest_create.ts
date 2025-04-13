@@ -11,7 +11,7 @@ import {
 } from "../../services/users/fetchUserData";
 
 export const onGameJoinCreate = documentCreateListenerHandler(
-  async (document, params) => {
+  async function gameJoinCreateHandler(document, params) {
     const logger = getLogger();
     logger.info("onGameJoinRequest: begin", {
       document,

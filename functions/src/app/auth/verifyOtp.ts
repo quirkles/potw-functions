@@ -16,7 +16,6 @@ export const verifyOtpFn = httpHandler(async ({
   initializeAppAdmin();
   const logger = createLogger({
     logName: "verifyOtpFn",
-    shouldLogToConsole: getConfig().env === "local",
     labels: {
       functionExecutionId: v4(),
       correlationId: headers["x-correlation-id"] as string || v4(),

@@ -18,7 +18,6 @@ export const handleGoogleLogin = httpHandler(async ({body, headers}) => {
   const tokenInfo = await client.getTokenInfo(body.token);
   const logger = createLogger({
     logName: "handleGoogleLogin",
-    shouldLogToConsole: getConfig().env === "local",
     labels: {
       functionExecutionId: v4(),
       correlationId: headers["x-correlation-id"] as string || v4(),

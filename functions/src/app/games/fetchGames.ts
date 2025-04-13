@@ -6,9 +6,9 @@ import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {fetchManyGames} from "../../services/games/fetchManyGames";
 import {fetchGamesForUser} from "../../services/users/fetchGamesForUser";
 
-export const fetchGames = httpHandler(async ({
+export const fetchGames = httpHandler(async function gamesFetch({
   query,
-}) => {
+}) {
   const logger = getLogger();
   logger.info("fetchGames begin", {query});
 

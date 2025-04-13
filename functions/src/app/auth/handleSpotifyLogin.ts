@@ -11,7 +11,7 @@ import {initializeAppAdmin} from "../../services/firebase";
 import {saveOrGetId, setField} from "../../services/firestore/user";
 
 export const handleSpotifyLogin = httpHandler(
-  async ({body, headers, query}) => {
+  async function handleSpotifyLogin({body, headers, query}) {
     initializeAppAdmin();
 
     const logger = createLogger({

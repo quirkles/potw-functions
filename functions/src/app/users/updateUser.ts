@@ -5,6 +5,7 @@ import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
+import {HttpHandlerFunction} from "../../functionWrapper/types";
 import {UnauthorizedError} from "../../utils/Errors";
 
 export const userUpdateSchema = sqlUserSchema.pick({
@@ -14,7 +15,16 @@ export const userUpdateSchema = sqlUserSchema.pick({
   avatarUrl: true,
 }).partial();
 
-export const updateUserRequest = httpHandler(async ({
+const functionConfig = {
+  useAppCheck: true,
+  requireAuthToken: true,
+  bodySchema: userUpdateSchema,
+  responseSchema: userUpdateSchema,
+  vpcConnector: "psql-connector",
+  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
+} as const;
+
+const updateUserHandler: HttpHandlerFunction<typeof functionConfig> = async ({
   body,
   tokenPayload,
 }) => {
@@ -38,11 +48,9 @@ export const updateUserRequest = httpHandler(async ({
     statusCode: 200,
     response: body,
   };
-}, {
-  useAppCheck: true,
-  requireAuthToken: true,
-  bodySchema: userUpdateSchema,
-  responseSchema: userUpdateSchema,
-  vpcConnector: "psql-connector",
-  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
-});
+};
+
+export const updateUser = httpHandler(
+  updateUserHandler,
+  functionConfig
+);

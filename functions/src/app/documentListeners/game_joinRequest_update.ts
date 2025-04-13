@@ -12,7 +12,7 @@ import {
 } from "../../services/users/fetchUserData";
 
 export const onGameJoinUpdate = documentUpdateListenerHandler(
-  async (_, after, params) => {
+  async function gameJoinUpdateHandler(_, after, params) {
     const logger = getLogger();
     logger.info("onGameJoinUpdate: begin", {
       params,

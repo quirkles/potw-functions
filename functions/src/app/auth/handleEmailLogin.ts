@@ -22,7 +22,6 @@ export const handleEmailLogin = httpHandler(async ({
       functionExecutionId: v4(),
       correlationId: headers["x-correlation-id"] as string || v4(),
     },
-    shouldLogToConsole: getConfig().env === "local",
   });
 
   initializeAppAdmin();

@@ -1,9 +1,17 @@
+import {existsSync, mkdirSync} from "node:fs";
+import path, {join} from "node:path";
 import {Writable} from "stream";
 
 import {Severity} from "@google-cloud/logging";
-import {pino, LoggerOptions as PLoggerOptions, Logger as PLogger} from "pino";
+import {
+  pino,
+  LoggerOptions as PLoggerOptions,
+  Logger as PLogger,
+  multistream, transport,
+} from "pino";
 import {v4} from "uuid";
 
+import {getConfig} from "../../config";
 import {deepMerge} from "../../utils/object";
 
 import {
@@ -91,17 +99,41 @@ export function createPinoLogger(
     },
   };
 
+  const transports = [];
+
+  if (getConfig().env === "local") {
+    // Ensure the logs directory exists
+    const logDirectory = join(__dirname, "../../../../", "logs");
+    if (!existsSync(logDirectory)) {
+      mkdirSync(logDirectory, {recursive: true});
+    }
+
+    // Create a destination for the log file
+    const dest = path.join(logDirectory, "app.dev.log");
+    transports.push(pino.destination({
+      dest: dest, // Path to the log file
+      sync: false, // Asynchronous logging for better performance
+    }));
+    console.log("createLogger: adding logfile", dest);
+  } else {
+    // in the cloud environment, use the cloud logging service by dumping to stdout
+    console.log("createLogger: adding stdout transport");
+    transports.push(pino.destination(1));
+  }
+
+
   if (shouldLogToConsole) {
     console.log("createLogger: adding console transport");
-    loggingConfig.transport = {
+    transports.push(transport({
       target: "pino-pretty",
       options: {
         colorize: true,
       },
-    };
+    }));
   }
 
-  const outStream = config.outStream || pino.destination(1);
+
+  const outStream = multistream(transports);
 
   return pino(loggingConfig, outStream);
 }

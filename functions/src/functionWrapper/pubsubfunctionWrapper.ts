@@ -3,7 +3,6 @@ import {onMessagePublished, MessagePublishedData} from "firebase-functions/v2/pu
 import {v4} from "uuid";
 import {TypeOf, z, ZodError, ZodSchema} from "zod";
 
-import {getConfig} from "../config";
 import {createLogger} from "../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../services/firebase";
 import {BadRequestError} from "../utils/Errors";
@@ -18,10 +17,11 @@ import {asyncLocalStorage, functionInstanceId} from "./index";
 
 
 export function pubsubHandler<
-    BodySchema extends ZodSchema | undefined,
+    T extends PubSubHandlerFunctionConfig,
+    BodySchema extends ZodSchema | undefined = T["bodySchema"],
 >(
-  func: PubSubHandlerFunction<BodySchema>,
-  config: PubSubHandlerFunctionConfig<BodySchema>
+  func: PubSubHandlerFunction<T>,
+  config: T
 ): ((event: CloudEvent<MessagePublishedData<unknown>>) => Promise<void> | void) {
   const {
     bodySchema = z.any().optional(),
@@ -45,7 +45,6 @@ export function pubsubHandler<
 
     const logger = createLogger({
       logName: loggerName || `pubsubHandler.${functionName || func.name || "unknownFunction"}`,
-      shouldLogToConsole: getConfig().env === "local",
       labels: {
         ...logLabels,
         ...flattenObject({payload: rest}),

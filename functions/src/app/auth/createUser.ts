@@ -14,7 +14,7 @@ const userPayloadSchema = z.object({
 
 type UserPayload = z.infer<typeof userPayloadSchema>;
 
-const createUserHandler = async (payload: UserPayload) => {
+const createUserHandler = async function createUser(payload: UserPayload) {
   const logger = getLogger();
   logger.info("createUser: begin", {payload});
 

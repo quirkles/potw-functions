@@ -14,7 +14,7 @@ export const testResponse = onRequest(
       const {
         username,
         password,
-      } = body;
+      } = body as Record<string, unknown>;
       logger.info("Body here", {
         username,
         password,

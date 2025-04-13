@@ -19,7 +19,7 @@ import {SelectUser, users} from "../../db/schema/user";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 
-export const fetchOne = httpHandler(async ({query}) => {
+export const fetchOne = httpHandler(async function gameFetchOne({query}) {
   const logger = getLogger();
   const db = getDb();
   logger.info("fetchOne: begin", {

@@ -1,14 +1,12 @@
 import {sqlUserSchema} from "@potw/schemas";
 import {eq} from "drizzle-orm";
-import {v4} from "uuid";
 import {z} from "zod";
 
-import {getConfig} from "../../config";
 import {getDb} from "../../db/dbClient";
 import {users} from "../../db/schema/user";
+import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 import {HttpHandlerFunction} from "../../functionWrapper/types";
-import {createLogger} from "../../services/Logger/Logger.pino";
 import {NotFoundError} from "../../utils/Errors";
 
 const querySchema = z.object({
@@ -16,22 +14,16 @@ const querySchema = z.object({
   includeGames: z.string().optional(),
 });
 
-const anySchema = z.any();
+const functionConfig = {
+  querySchema: querySchema,
+  responseSchema: sqlUserSchema,
+  useAppCheck: true,
+  vpcConnector: "psql-connector",
+  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
+} as const;
 
-const handler: HttpHandlerFunction<
-    typeof anySchema,
-    typeof querySchema,
-    typeof sqlUserSchema,
-    false
-> = async ({query, headers}) => {
-  const logger =createLogger({
-    name: "fetchUserById",
-    shouldLogToConsole: getConfig().env === "local",
-    labels: {
-      functionExecutionId: v4(),
-      correlationId: headers["x-correlation-id"] as string || v4(),
-    },
-  });
+const fetchUserByIdHandler: HttpHandlerFunction<typeof functionConfig> = async ({query}) => {
+  const logger = getLogger();
   logger.info("fetchUserById: begin", {
     query: query,
   });
@@ -95,10 +87,4 @@ const handler: HttpHandlerFunction<
   };
 };
 
-export const fetchUserById = httpHandler(handler, {
-  querySchema: querySchema,
-  responseSchema: sqlUserSchema,
-  useAppCheck: true,
-  vpcConnector: "psql-connector",
-  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
-});
+export const fetchUserById = httpHandler(fetchUserByIdHandler, functionConfig);

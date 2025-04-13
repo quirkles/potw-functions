@@ -10,10 +10,10 @@ import {
 } from "../../functionWrapper/documentUpdateListenerWrapper";
 
 export const onGameWeekUpdate = documentUpdateListenerHandler(
-  async (
+  async function gameWeekUpdateHandler(
     before,
     after,
-    params) => {
+    params) {
     const logger = getLogger();
     const beforeThemePollStatus = before?.themePoll?.status;
     const afterThemePollStatus = after?.themePoll?.status;

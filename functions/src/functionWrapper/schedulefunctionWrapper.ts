@@ -1,7 +1,6 @@
 import {ScheduleFunction, ScheduleOptions, onSchedule} from "firebase-functions/v2/scheduler";
 import {v4} from "uuid";
 
-import {getConfig} from "../config";
 import {createLogger} from "../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../services/firebase";
 
@@ -25,7 +24,6 @@ export function onScheduleHandler(
 
     const logger = createLogger({
       logName: `scheduleHandler:${config.functionName || func.name || "unknownFunction"}`,
-      shouldLogToConsole: getConfig().env === "local",
       labels: {
         ...logLabels,
         correlationId,

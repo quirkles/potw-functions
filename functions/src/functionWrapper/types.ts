@@ -6,27 +6,23 @@ import {TypeOf, ZodSchema} from "zod";
 import {TopicNames} from "../services/pubsub";
 import type {Maybe, OrPromise} from "../typeUtils";
 
-export type HttpHandlerFunctionConfig<
-    BodySchema extends ZodSchema | undefined,
-    QuerySchema extends ZodSchema | undefined,
-    ResponseSchema extends ZodSchema | undefined,
-    RequireAuthToken extends boolean,
-> = HttpsOptions & {
-    bodySchema?: BodySchema,
-    querySchema?: QuerySchema,
-    responseSchema?: ResponseSchema,
+export type HttpHandlerFunctionConfig = HttpsOptions & {
+    bodySchema?: ZodSchema,
+    querySchema?: ZodSchema,
+    responseSchema?: ZodSchema,
     loggerName?: string,
     useAppCheck?: boolean,
-    requireAuthToken?: RequireAuthToken,
+    requireAuthToken?: boolean,
     functionName?: string,
     rawHtmlResponse?: boolean,
 };
 
 export type HttpHandlerFunction<
-    BodySchema extends ZodSchema | undefined,
-    QuerySchema extends ZodSchema | undefined,
-    ResponseSchema extends ZodSchema | undefined,
-    RequireAuthToken extends boolean,
+    T extends HttpHandlerFunctionConfig,
+    RequireAuthToken extends boolean = T["requireAuthToken"] extends boolean ? T["requireAuthToken"] : false,
+    BodySchema extends ZodSchema | undefined = T["bodySchema"],
+    QuerySchema extends ZodSchema | undefined = T["querySchema"],
+    ResponseSchema extends ZodSchema | undefined = T["responseSchema"],
 > = (
     payload: {
         body: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown,
@@ -49,27 +45,18 @@ export type HttpHandlerFunction<
     }>
 >;
 
-export type PubSubHandlerFunctionConfig<
-    BodySchema extends ZodSchema | undefined,
-> = PubSubOptions & {
+export type PubSubHandlerFunctionConfig = PubSubOptions & {
     topic: TopicNames,
-    bodySchema?: BodySchema,
+    bodySchema?: ZodSchema,
     loggerName?: string,
     functionName?: string,
 }
 
 export type PubSubHandlerFunction<
-    BodySchema extends ZodSchema | undefined,
+    T extends PubSubHandlerFunctionConfig,
+    BodySchema extends ZodSchema | undefined = T["bodySchema"],
 > = (
-    payload: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown,
-) => unknown | Promise<unknown>;
-
-export type OnDocumentCreatedHandlerFunction<
-    NewDocumentSchema extends ZodSchema | undefined,
-    ParamsSchema extends ZodSchema | undefined,
-> = (
-    payload: NewDocumentSchema extends ZodSchema ? TypeOf<NewDocumentSchema> : unknown,
-    params: ParamsSchema extends ZodSchema ? TypeOf<ParamsSchema> : unknown,
+    body: BodySchema extends ZodSchema ? TypeOf<BodySchema> : unknown,
 ) => unknown | Promise<unknown>;
 
 export type OnDocumentCreatedHandlerFunctionConfig<
@@ -81,6 +68,15 @@ export type OnDocumentCreatedHandlerFunctionConfig<
     paramsSchema?: ParamsSchema,
     functionName?: string,
 }
+
+export type OnDocumentCreatedHandlerFunction<
+    NewDocumentSchema extends ZodSchema | undefined,
+    ParamsSchema extends ZodSchema | undefined,
+> = (
+    payload: NewDocumentSchema extends ZodSchema ? TypeOf<NewDocumentSchema> : unknown,
+    params: ParamsSchema extends ZodSchema ? TypeOf<ParamsSchema> : unknown,
+) => unknown | Promise<unknown>;
+
 
 export type OnDocumentUpdateHandlerFunction<
     BeforeDocumentSchema extends ZodSchema | undefined,

@@ -60,7 +60,7 @@ export function dispatchPubSubEvent(action: ReturnType<typeof payloadCreators[AC
   const logger = getLogger();
   logger.info("Dispatching event", {action});
   const pubsubConfig = getConfig().env === "local" ? {
-    apiEndpoint: `localhost:${process.env.PUBSUB_EMULATOR_PORT}`,
+    apiEndpoint: process.env.PUBSUB_EMULATOR_HOST,
   }: {};
   logger.info("Pubsub config", {pubsubConfig});
   const pubsub = new PubSub(pubsubConfig);

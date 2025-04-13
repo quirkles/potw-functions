@@ -11,7 +11,7 @@ import {SelectVote, votes} from "../../db/schema/votes";
 import {getLogger} from "../../functionWrapper";
 import {httpHandler} from "../../functionWrapper/httpfunctionWrapper";
 
-export const fetchAllGameVotes = httpHandler(async ({query}) => {
+export const fetchAllGameVotes = httpHandler(async function gameVotesFetchAll({query}) {
   const logger = getLogger();
   const db = getDb();
   logger.info("fetchAllGameVotes: begin");

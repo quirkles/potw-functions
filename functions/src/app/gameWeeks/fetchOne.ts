@@ -20,7 +20,7 @@ import {selectGameWeekToGameWeek} from "../transforms/selectGameWeekToGameWeek";
 import {selectPickToPick} from "../transforms/selectPickToPick";
 
 
-export const fetchOne = httpHandler(async ({query}) => {
+export const fetchOne = httpHandler(async function fetchOneGameWeek({query}) {
   const logger = getLogger();
   const db = getDb();
   logger.info("fetchOne: begin", {

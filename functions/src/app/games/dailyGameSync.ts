@@ -191,7 +191,7 @@ export const doDailyGameUpdate = pubsubHandler(
     retry: false,
     vpcConnector: VPC_CONNECTOR,
     vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
-  });
+  } as const);
 
 async function processResults(results: {
     game_weeks: SelectGameWeek;

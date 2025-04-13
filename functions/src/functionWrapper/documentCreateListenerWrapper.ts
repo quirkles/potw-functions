@@ -2,7 +2,6 @@ import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {v4} from "uuid";
 import {TypeOf, z, ZodError, ZodSchema} from "zod";
 
-import {getConfig} from "../config";
 import {createLogger} from "../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../services/firebase";
 import {BadRequestError} from "../utils/Errors";
@@ -52,7 +51,6 @@ export function documentCreateListenerHandler<
     };
     const logger = createLogger({
       logName: `documentSubHandler.${functionName || func.name || "unknownFunction"}`,
-      shouldLogToConsole: getConfig().env === "local",
       labels: {
         ...logLabels,
       },

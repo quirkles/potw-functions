@@ -4,7 +4,6 @@ import {req as reqSerializer} from "pino-std-serializers";
 import {v4} from "uuid";
 import {TypeOf, ZodError, ZodSchema} from "zod";
 
-import {getConfig} from "../config";
 import {createLogger} from "../services/Logger/Logger.pino";
 import {initializeAppAdmin} from "../services/firebase";
 import {TokenBody, verifyToken} from "../services/jwt/jwt";
@@ -17,13 +16,12 @@ import {asyncLocalStorage, functionInstanceId} from "./index";
 
 
 export function httpHandler<
-    BodySchema extends ZodSchema | undefined,
-    QuerySchema extends ZodSchema | undefined,
-    ResponseSchema extends ZodSchema | undefined,
-    RequireAuthToken extends boolean,
+    T extends HttpHandlerFunctionConfig,
+    BodySchema extends ZodSchema | undefined = T["bodySchema"],
+    QuerySchema extends ZodSchema | undefined = T["querySchema"],
 >(
-  func: HttpHandlerFunction<BodySchema, QuerySchema, ResponseSchema, RequireAuthToken>,
-  config?: HttpHandlerFunctionConfig<BodySchema, QuerySchema, ResponseSchema, RequireAuthToken>
+  func: HttpHandlerFunction<T>,
+  config?: T
 ): HttpsFunction {
   const {
     bodySchema,
@@ -54,7 +52,6 @@ export function httpHandler<
 
     const logger = createLogger({
       logName: `httpHandler.${functionName || func.name || "unknownFunction"}`,
-      shouldLogToConsole: getConfig().env === "local",
       labels: {
         ...logLabels,
         ...flattenObject({payload: body}),

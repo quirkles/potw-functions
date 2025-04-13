@@ -21,9 +21,9 @@ import {initializeGameWeeksForGame} from "../../services/games/initializeNextGam
 import {inviteUsers} from "../../services/users/inviteUsers";
 import {ServerError} from "../../utils/Errors";
 
-export const createGame = httpHandler(async ({
+export const createGame = httpHandler(async function gameCreate({
   body,
-}) => {
+}) {
   initializeAppAdmin();
   const logger = getLogger();
   const db = getDb();
