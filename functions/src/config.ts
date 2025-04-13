@@ -56,5 +56,3 @@ export function getConfig(): Config {
   config = configSchema.parse(maybeConfig);
   return config;
 }
-
-export const VPC_CONNECTOR = "psql-connector";

@@ -1,6 +1,5 @@
 import {z} from "zod";
 
-import {VPC_CONNECTOR} from "../../config";
 import {getLogger} from "../../functionWrapper";
 import {
   documentUpdateListenerHandler,
