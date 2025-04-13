@@ -18,8 +18,6 @@ const functionConfig = {
   querySchema: querySchema,
   responseSchema: sqlUserSchema,
   useAppCheck: true,
-  vpcConnector: "psql-connector",
-  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 } as const;
 
 const fetchUserByIdHandler: HttpHandlerFunction<typeof functionConfig> = async ({query}) => {

@@ -43,6 +43,4 @@ export const fetchGames = httpHandler(async function gamesFetch({
   responseSchema: z.object({
     games: z.array(sqlGameWithRelationsSchema),
   }),
-  vpcConnector: "psql-connector",
-  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });

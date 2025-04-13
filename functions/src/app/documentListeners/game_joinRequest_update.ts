@@ -53,6 +53,4 @@ export const onGameJoinUpdate = documentUpdateListenerHandler(
       requesteeId: z.string(),
     }),
     functionName: "onGameJoinRequest",
-    vpcConnector: VPC_CONNECTOR,
-    vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
   });

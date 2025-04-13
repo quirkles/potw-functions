@@ -51,6 +51,4 @@ export const onGameJoinCreate = documentCreateListenerHandler(
       requesteeId: z.string(),
     }),
     functionName: "onGameJoinRequest",
-    vpcConnector: "psql-connector",
-    vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
   });

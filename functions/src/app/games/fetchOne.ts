@@ -86,8 +86,6 @@ export const fetchOne = httpHandler(async function gameFetchOne({query}) {
     gameId: z.string(),
   }),
   responseSchema: sqlGameWithRelationsSchema,
-  vpcConnector: "psql-connector",
-  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });
 
 function resultsToGames(results: {

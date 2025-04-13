@@ -20,8 +20,6 @@ const functionConfig = {
   requireAuthToken: true,
   bodySchema: userUpdateSchema,
   responseSchema: userUpdateSchema,
-  vpcConnector: "psql-connector",
-  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 } as const;
 
 const updateUserHandler: HttpHandlerFunction<typeof functionConfig> = async ({

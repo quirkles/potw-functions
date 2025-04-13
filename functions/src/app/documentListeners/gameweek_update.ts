@@ -68,7 +68,5 @@ export const onGameWeekUpdate = documentUpdateListenerHandler(
       gameWeekId: z.string(),
     }),
     functionName: "onGameJoinRequest",
-    vpcConnector: "psql-connector",
-    vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
   }
 );

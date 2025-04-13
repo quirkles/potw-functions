@@ -193,6 +193,4 @@ export const createGame = httpHandler(async function gameCreate({
 }, {
   bodySchema: createGamePayloadSchema,
   responseSchema: sqlGameSchema,
-  vpcConnector: "psql-connector",
-  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });

@@ -189,8 +189,6 @@ export const doDailyGameUpdate = pubsubHandler(
     topic: TopicNames.DAILY_GAME_UPDATE,
     maxInstances: 15,
     retry: false,
-    vpcConnector: VPC_CONNECTOR,
-    vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
   } as const);
 
 async function processResults(results: {

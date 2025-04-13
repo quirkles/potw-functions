@@ -19,6 +19,4 @@ export const pingDb = httpHandler(async () => {
   };
 }, {
   functionName: "pingDb",
-  vpcConnector: "psql-connector",
-  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });

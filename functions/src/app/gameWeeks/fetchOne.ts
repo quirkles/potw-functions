@@ -50,8 +50,6 @@ export const fetchOne = httpHandler(async function fetchOneGameWeek({query}) {
     gameWeekId: z.string(),
   }),
   responseSchema: sqlGameWeekWithRelationsSchema,
-  vpcConnector: "psql-connector",
-  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY",
 });
 
 function processResults(results: {
