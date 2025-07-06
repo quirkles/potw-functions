@@ -1,7 +1,6 @@
 import {drizzle, PostgresJsDatabase} from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import {mask} from "../../services/utils/string";
 import * as game from "../schema/game";
 import * as gameWeeks from "../schema/gameWeek";
 import * as gamesToUsers from "../schema/gamesToUsers";
@@ -34,8 +33,10 @@ export const getDb = () => {
     ) {
       throw new Error("Missing required config");
     }
-    const queryClient = postgres(`postgres://${user}:${password}@${host}:${port}/${name}`);
-    console.log(`Connection string: postgres://${user}:${mask(password)}@${mask(host)}:${port}/${name}`);
+    const connectionString =
+        `postgres://${user}:${password}@${host}:${port}/${name}?sslmode=require&channel_binding=require`;
+    console.log(`Connection string: ${connectionString}`);
+    const queryClient = postgres(connectionString);
     db = drizzle(queryClient, config);
   }
   return db;

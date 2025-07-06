@@ -7,9 +7,9 @@ export const documentsToPreserve: {
     }
 } = {
   firebase: {
-    users: ["KQYEh9cZSBe4zd6wCZKMNwm85aO2"],
+    users: [],
   },
   postgres: {
-    users: ["a499412f-13aa-4cda-ab5c-21f7e80d44cd"],
+    users: [],
   },
 };

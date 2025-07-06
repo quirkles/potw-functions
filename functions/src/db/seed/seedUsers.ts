@@ -67,6 +67,7 @@ export async function seedUsers({
     return acc;
   }, {});
   const batch = firestore.batch();
+  console.log(`Seeding ${firestoreUserDocs.length} users into Firestore...`);
   for (const ref of firestoreUserDocs) {
     batch.set(ref, {
       sqlId: firestoreIdToTSqlUser[ref.id].sqlId,

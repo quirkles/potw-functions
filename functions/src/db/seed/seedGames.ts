@@ -36,7 +36,8 @@ export async function seedGames({
         status: string,
         startDate: string,
     }[] = [];
-    for (const userId of ensureIncludedUserIds) {
+    const usersToAddToGames= [...ensureIncludedUserIds, ...shuffle(userIds).slice(2, 11)];
+    for (const userId of usersToAddToGames) {
       const weeks: Date[] = Array.from({
         length: 12,
       }).map((_, i) => (add(start, {
@@ -128,6 +129,7 @@ export async function seedGames({
   }, {});
 
   const batch = firestore.batch();
+  console.log(`Seeding ${firestoreGameRefs.length} games into Firestore...`);
   for (const ref of firestoreGameRefs) {
     batch.set(ref, {
       sqlId: firestoreIdToGame[ref.id].sqlId,

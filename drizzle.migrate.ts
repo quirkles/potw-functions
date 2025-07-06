@@ -30,7 +30,9 @@ if (!SQL_DB_HOST || !SQL_DB_NAME || !SQL_DB_PORT || !SQL_DB_USER || !SQL_DB_PASS
 }
 
 async function main(){
-    const sql = postgres(`postgres://${SQL_DB_USER}:${SQL_DB_PASSWORD}@${SQL_DB_HOST}:${SQL_DB_PORT}/${SQL_DB_NAME}`, { max: 1 })
+    let connectionString = `postgres://${SQL_DB_USER}:${SQL_DB_PASSWORD}@${SQL_DB_HOST}:${SQL_DB_PORT}/${SQL_DB_NAME}?sslmode=require&channel_binding=require`;
+    console.log(`Connection string: ${connectionString}`)
+    const sql = postgres(connectionString, { max: 1 })
     const db = drizzle(sql);
     await migrate(db, { migrationsFolder: "drizzle" });
     await sql.end();

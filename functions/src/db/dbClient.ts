@@ -27,8 +27,12 @@ let singleton: ReturnType<typeof initDb>;
 const initDb = () => {
   const {sqlDatabase} = getConfig();
   const {host, port, user, password, dbName} = sqlDatabase;
-  const queryClient = postgres(`postgres://${user}:${password}@${host}:${port}/${dbName}`);
+  const connectionString =
+      `postgres://${user}:${password}@${host}:${port}/${dbName}?sslmode=require&channel_binding=require`;
   console.log(`Connection string: postgres://${user}:${mask(password)}@${host}:${port}/${dbName}`);
+  const queryClient = postgres(
+    connectionString
+  );
   return drizzle(queryClient, dbConfig);
 };
 
