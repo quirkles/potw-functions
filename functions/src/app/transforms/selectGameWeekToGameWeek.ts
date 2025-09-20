@@ -7,7 +7,7 @@ export function selectGameWeekToGameWeek(gameWeek: SelectGameWeek):TSqlGameWeek 
     gameSqlId: gameWeek.gameId,
     firestoreId: gameWeek.firestoreId,
     sqlId: gameWeek.id,
-    startDateTime: gameWeek.startDateTime,
+    startDateTime: gameWeek.startDateTime.toISOString(),
     status: gameWeek.status,
     theme: gameWeek.theme,
     meetingLink: gameWeek.meetingLink,
