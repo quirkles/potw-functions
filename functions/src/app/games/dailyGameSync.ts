@@ -196,106 +196,124 @@ async function processResults(results: {
 }[]): Promise<void> {
   const logger = getLogger();
   logger.info("Processing game weeks", {results});
-  let cursor: SelectGameWeek | null = null;
+
+  // Sort by gameWeek startDateTime from early to late, then by id desc for stability
+  results.sort((a, b) => {
+    const tA = a.game_weeks.startDateTime.getTime();
+    const tB = b.game_weeks.startDateTime.getTime();
+    if (tA !== tB) return tA - tB;
+    return a.game_weeks.id > b.game_weeks.id ? -1 : 1;
+  });
+
+  let hasStartedGameWeek = false;
+
   const actions: {
-        gameWeekId: string;
-        adminId: string;
-        action: "setOverdue" | "closeGameWeek" | "startGameWeek";
-    }[] = [];
-  for (const result of results) {
+    gameWeekId: string;
+    adminId: string;
+    action: "setOverdue" | "closeGameWeek" | "startGameWeek";
+  }[] = [];
+
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
     const {game_weeks: gameWeek, games: game} = result;
-    if (cursor === null) {
-      cursor = gameWeek;
-    } else if (
-      gameWeek.startDateTime >= cursor.startDateTime &&
-            gameWeek.id > cursor.id
-    ) {
-      cursor = gameWeek;
-    }
-    if (game === null) {
-      continue;
-    }
+    if (game === null) continue;
+
+    // Determine action based on status and timing
     let action: "setOverdue" | "closeGameWeek" | "startGameWeek" | null = null;
-    // If the game week is pending and the start date is 5 hours ago or more, send a reminder
-    if (gameWeek.status === "current" && addHours(gameWeek.startDateTime, 5) <= new Date()) {
+
+    // Overdue if pending and >= 5 hours past start
+    if (gameWeek.status === "pending" && addHours(gameWeek.startDateTime, 5) <= new Date()) {
       action = "setOverdue";
-      // If the game week is pending and the start date is 3 days ago or more, close the game week
-    } else if (gameWeek.status === "overdue" && addDays(gameWeek.startDateTime, 3) <= new Date()) {
+    // Close if current and weve started a gameweek earlier
+    } else if (gameWeek.status === "current" && hasStartedGameWeek) {
       action = "closeGameWeek";
+    // Start if pending and it's time to start
     } else if (
       gameWeek.status === "pending" &&
-            gameWeek.startDateTime <= calculateNextGameWeekStartDate(game, null)
+      gameWeek.startDateTime <= calculateNextGameWeekStartDate(game, null)
     ) {
       action = "startGameWeek";
+      hasStartedGameWeek = true;
     }
-    if (action !== null) {
+
+    // Ensure that if any gameweek has started, all subsequent (earlier) pending/overdue are closed
+    // Since we iterate from latest to earliest, once hasStartedGameWeek is true, close earlier weeks.
+    if (!action && hasStartedGameWeek && (gameWeek.status === "pending" || gameWeek.status === "overdue")) {
+      action = "closeGameWeek";
+    }
+
+    if (action) {
       actions.push({
         gameWeekId: gameWeek.id,
         adminId: game.adminId,
         action,
       });
     }
-    if (cursor === null) {
-      throw new Error("No cursor found");
-    }
-    logger.info("Processing actions", {actions});
-
-    const pubSubPromises: Promise<unknown>[] = [];
-
-    const db = getDb();
-
-    const txResults = await db.transaction(async (trx) => {
-      const txReturns: Record<string, unknown>[] = [];
-      for (const action of actions) {
-        if (action.action === "setOverdue") {
-          logger.info("Sending reminder", {gameWeekId: action.gameWeekId});
-          trx.update(gameWeeks)
-            .set({status: "overdue"})
-            .where(eq(gameWeeks.id, action.gameWeekId))
-            .returning({
-              gameWeekId: gameWeeks.id,
-              status: gameWeeks.status,
-            }).then((res) => {
-              txReturns.push({...res, expectedStatus: "overdue"});
-            });
-          pubSubPromises.push(dispatchPubSubEvent(payloadCreators.SEND_CLOSE_GAME_WEEK_REMINDER({
-            gameWeekId: action.gameWeekId,
-            adminId: action.adminId,
-          })).catch((err) => {
-            logger.error("Error sending reminder", {
-              err, payloadCreators: {
-                gameWeekId: action.gameWeekId,
-                adminId: action.adminId,
-              },
-            });
-          }));
-        } else if (action.action === "closeGameWeek") {
-          logger.info("Closing game week", {gameWeekId: action.gameWeekId});
-          trx.update(gameWeeks)
-            .set({status: "complete"})
-            .where(eq(gameWeeks.id, action.gameWeekId)).returning({
-              gameWeekId: gameWeeks.id,
-              status: gameWeeks.status,
-            }).then((res) => {
-              txReturns.push({...res, expectedStatus: "complete"});
-            });
-        } else if (action.action === "startGameWeek") {
-          logger.info("Starting game week", {gameWeekId: action.gameWeekId});
-          trx.update(gameWeeks)
-            .set({status: "current"})
-            .where(eq(gameWeeks.id, action.gameWeekId)).returning({
-              gameWeekId: gameWeeks.id,
-              status: gameWeeks.status,
-            }).then((res) => {
-              txReturns.push({...res, expectedStatus: "current"});
-            });
-        }
-      }
-      return txReturns;
-    });
-
-    logger.info("Transaction results", {txResults});
-
-    await Promise.all(pubSubPromises);
   }
+
+  if (actions.length === 0) {
+    logger.info("No actions to process");
+    return;
+  }
+
+  logger.info("Processing actions", {actions});
+
+  const pubSubPromises: Promise<unknown>[] = [];
+  const db = getDb();
+
+  const txResults = await db.transaction(async (trx) => {
+    const txReturns: Record<string, unknown>[] = [];
+    for (const action of actions) {
+      if (action.action === "setOverdue") {
+        logger.info("Sending reminder", {gameWeekId: action.gameWeekId});
+        trx.update(gameWeeks)
+          .set({status: "overdue"})
+          .where(eq(gameWeeks.id, action.gameWeekId))
+          .returning({
+            gameWeekId: gameWeeks.id,
+            status: gameWeeks.status,
+          }).then((res) => {
+            txReturns.push({...res, expectedStatus: "overdue"});
+          });
+        pubSubPromises.push(dispatchPubSubEvent(payloadCreators.SEND_CLOSE_GAME_WEEK_REMINDER({
+          gameWeekId: action.gameWeekId,
+          adminId: action.adminId,
+        })).catch((err) => {
+          logger.error("Error sending reminder", {
+            err, payloadCreators: {
+              gameWeekId: action.gameWeekId,
+              adminId: action.adminId,
+            },
+          });
+        }));
+      // ... existing code ...
+      } else if (action.action === "closeGameWeek") {
+        logger.info("Closing game week", {gameWeekId: action.gameWeekId});
+        trx.update(gameWeeks)
+          .set({status: "complete"})
+          .where(eq(gameWeeks.id, action.gameWeekId)).returning({
+            gameWeekId: gameWeeks.id,
+            status: gameWeeks.status,
+          }).then((res) => {
+            txReturns.push({...res, expectedStatus: "complete"});
+          });
+      // ... existing code ...
+      } else if (action.action === "startGameWeek") {
+        logger.info("Starting game week", {gameWeekId: action.gameWeekId});
+        trx.update(gameWeeks)
+          .set({status: "current"})
+          .where(eq(gameWeeks.id, action.gameWeekId)).returning({
+            gameWeekId: gameWeeks.id,
+            status: gameWeeks.status,
+          }).then((res) => {
+            txReturns.push({...res, expectedStatus: "current"});
+          });
+      }
+    }
+    return txReturns;
+  });
+
+  logger.info("Transaction results", {txResults});
+
+  await Promise.all(pubSubPromises);
 }

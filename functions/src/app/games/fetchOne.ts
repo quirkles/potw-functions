@@ -163,6 +163,7 @@ function resultsToGames(results: {
         if (!existingGameWeek) {
           const parsedGameWeekResult = sqlGameWeekSchema.safeParse({
             ...result.gameWeeksSubQuery,
+            startDateTime: result.gameWeeksSubQuery.startDateTime.toISOString(),
             sqlId: result.gameWeeksSubQuery.id,
             gameSqlId: result.games.id,
           });
