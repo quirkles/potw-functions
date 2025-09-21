@@ -148,8 +148,8 @@ export const doDailyGameUpdate = pubsubHandler(
 
       if (
         game.endDate &&
-          game.status === "active" &&
-          addDays(new Date(), 1) >= new Date(game.endDate)
+                game.status === "active" &&
+                addDays(new Date(), 1) >= new Date(game.endDate)
       ) {
         logger.info("Game is active and end date is today or tomorrow, updating status to inactive", {game});
         await db.update(games).set({status: "inactive"}).where(eq(games.id, gameSqlId)).execute();
@@ -197,25 +197,29 @@ async function processResults(results: {
   const logger = getLogger();
   logger.info("Processing game weeks", {results});
 
-  // Sort by gameWeek startDateTime from early to late, then by id desc for stability
+  // Sort by gameWeek startDateTime from late to early, then by id desc for stability
   results.sort((a, b) => {
     const tA = a.game_weeks.startDateTime.getTime();
     const tB = b.game_weeks.startDateTime.getTime();
-    if (tA !== tB) return tA - tB;
+    if (tA !== tB) return tB - tA;
     return a.game_weeks.id > b.game_weeks.id ? -1 : 1;
   });
 
-  let hasStartedGameWeek = false;
+  let hasSeenCurrent = false;
 
   const actions: {
-    gameWeekId: string;
-    adminId: string;
-    action: "setOverdue" | "closeGameWeek" | "startGameWeek";
-  }[] = [];
+        gameWeekId: string;
+        adminId: string;
+        action: "setOverdue" | "closeGameWeek" | "startGameWeek";
+    }[] = [];
 
+  // Order is important, we want to start with the most recent and work our way back
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     const {game_weeks: gameWeek, games: game} = result;
+    logger.info("processResult, game and week", {
+      game, gameWeek,
+    });
     if (game === null) continue;
 
     // Determine action based on status and timing
@@ -224,21 +228,28 @@ async function processResults(results: {
     // Overdue if pending and >= 5 hours past start
     if (gameWeek.status === "pending" && addHours(gameWeek.startDateTime, 5) <= new Date()) {
       action = "setOverdue";
-    // Close if current and weve started a gameweek earlier
-    } else if (gameWeek.status === "current" && hasStartedGameWeek) {
-      action = "closeGameWeek";
-    // Start if pending and it's time to start
+      // Close if current and weve started a gameweek earlier
+    } else if (gameWeek.status === "current") {
+      // Check if we've already seen a more recent current gameweek
+      // if so we should close this one
+      if (hasSeenCurrent) {
+        action = "closeGameWeek";
+      }
+      hasSeenCurrent = true;
     } else if (
+    // Start if pending and it's time to start
       gameWeek.status === "pending" &&
-      gameWeek.startDateTime <= calculateNextGameWeekStartDate(game, null)
+            gameWeek.startDateTime <= calculateNextGameWeekStartDate(game, null)
     ) {
       action = "startGameWeek";
-      hasStartedGameWeek = true;
+      // Set the flag
+      // If we see a current gameweek after this, it will be earlier and should be closed
+      hasSeenCurrent = true;
     }
 
-    // Ensure that if any gameweek has started, all subsequent (earlier) pending/overdue are closed
-    // Since we iterate from latest to earliest, once hasStartedGameWeek is true, close earlier weeks.
-    if (!action && hasStartedGameWeek && (gameWeek.status === "pending" || gameWeek.status === "overdue")) {
+    // Ensure that if any gameweek has started, all subsequent pending/overdue are closed
+    // Since we iterate from latest to earliest, once hasSeenCurrent is true, close earlier weeks.
+    if (!action && hasSeenCurrent && (gameWeek.status === "pending" || gameWeek.status === "overdue")) {
       action = "closeGameWeek";
     }
 
@@ -286,7 +297,7 @@ async function processResults(results: {
             },
           });
         }));
-      // ... existing code ...
+        // ... existing code ...
       } else if (action.action === "closeGameWeek") {
         logger.info("Closing game week", {gameWeekId: action.gameWeekId});
         trx.update(gameWeeks)
@@ -297,7 +308,7 @@ async function processResults(results: {
           }).then((res) => {
             txReturns.push({...res, expectedStatus: "complete"});
           });
-      // ... existing code ...
+        // ... existing code ...
       } else if (action.action === "startGameWeek") {
         logger.info("Starting game week", {gameWeekId: action.gameWeekId});
         trx.update(gameWeeks)
